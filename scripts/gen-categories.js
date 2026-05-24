@@ -1,0 +1,80 @@
+const fs = require('fs');
+const cats = [
+  {id:"cat_ai-tools",name:"AI 工具",slug:"ai-tools",description:"人工智能相关工具和平台",icon:"🤖",parent_id:null,level:1,sort_order:1,website_count:0},
+  {id:"cat_developer-tools",name:"开发者工具",slug:"developer-tools",description:"编程、部署、测试和协作工具",icon:"💻",parent_id:null,level:1,sort_order:2,website_count:0},
+  {id:"cat_design-resources",name:"设计资源",slug:"design-resources",description:"UI 设计、图标、素材和灵感",icon:"🎨",parent_id:null,level:1,sort_order:3,website_count:0},
+  {id:"cat_productivity",name:"效率办公",slug:"productivity",description:"文档、协作、项目管理和自动化",icon:"📋",parent_id:null,level:1,sort_order:4,website_count:0},
+  {id:"cat_cloud-services",name:"云服务",slug:"cloud-services",description:"云计算、托管和基础设施",icon:"☁️",parent_id:null,level:1,sort_order:5,website_count:0},
+  {id:"cat_data-analytics",name:"数据分析",slug:"data-analytics",description:"数据可视化、统计和商业智能",icon:"📊",parent_id:null,level:1,sort_order:6,website_count:0},
+  {id:"cat_marketing",name:"营销推广",slug:"marketing",description:"SEO、社交媒体、广告和增长",icon:"📢",parent_id:null,level:1,sort_order:7,website_count:0},
+  {id:"cat_learning",name:"学习教育",slug:"learning",description:"在线课程、教程和知识平台",icon:"📚",parent_id:null,level:1,sort_order:8,website_count:0},
+  {id:"cat_open-source",name:"开源项目",slug:"open-source",description:"优质开源软件和框架",icon:"🔓",parent_id:null,level:1,sort_order:9,website_count:0},
+  {id:"cat_search-engines",name:"搜索引擎",slug:"search-engines",description:"网页搜索和信息检索",icon:"🔍",parent_id:null,level:1,sort_order:10,website_count:0},
+  {id:"cat_code-hosting",name:"代码托管",slug:"code-hosting",description:"代码仓库和版本控制",icon:"📦",parent_id:null,level:1,sort_order:11,website_count:0},
+  {id:"cat_startup-tools",name:"创业工具",slug:"startup-tools",description:"产品发布、融资和创业服务",icon:"🚀",parent_id:null,level:1,sort_order:12,website_count:0},
+  {id:"cat_social-media",name:"社交媒体",slug:"social-media",description:"社交网络、即时通讯和社区",icon:"💬",parent_id:null,level:1,sort_order:13,website_count:0},
+  {id:"cat_entertainment",name:"影音娱乐",slug:"entertainment",description:"视频、音乐、直播和游戏",icon:"🎬",parent_id:null,level:1,sort_order:14,website_count:0},
+  {id:"cat_ecommerce",name:"电商购物",slug:"ecommerce",description:"在线购物、比价和优惠",icon:"🛒",parent_id:null,level:1,sort_order:15,website_count:0},
+  {id:"cat_news",name:"新闻资讯",slug:"news",description:"新闻门户、科技媒体和行业资讯",icon:"📰",parent_id:null,level:1,sort_order:16,website_count:0},
+  {id:"cat_finance",name:"金融理财",slug:"finance",description:"银行、投资、加密货币和记账",icon:"💰",parent_id:null,level:1,sort_order:17,website_count:0},
+  {id:"cat_jobs",name:"求职招聘",slug:"jobs",description:"招聘平台、简历工具和职业发展",icon:"💼",parent_id:null,level:1,sort_order:18,website_count:0},
+  {id:"cat_lifestyle",name:"生活服务",slug:"lifestyle",description:"外卖、出行、地图和本地服务",icon:"🏠",parent_id:null,level:1,sort_order:19,website_count:0},
+  {id:"cat_writing-tools",name:"写作工具",slug:"writing-tools",description:"文档编辑、笔记、博客和知识管理",icon:"✍️",parent_id:null,level:1,sort_order:20,website_count:0},
+  {id:"cat_images-stock",name:"图片素材",slug:"images-stock",description:"免费图片、图标、插画和素材库",icon:"🖼️",parent_id:null,level:1,sort_order:21,website_count:0},
+  {id:"cat_video-tools",name:"视频工具",slug:"video-tools",description:"视频编辑、录屏、转码和字幕",icon:"📹",parent_id:null,level:1,sort_order:22,website_count:0},
+  {id:"cat_security",name:"网络安全",slug:"security",description:"密码管理、VPN、加密和安全检测",icon:"🔒",parent_id:null,level:1,sort_order:23,website_count:0},
+  {id:"cat_remote-work",name:"远程办公",slug:"remote-work",description:"视频会议、团队协作和远程工具",icon:"🏡",parent_id:null,level:1,sort_order:24,website_count:0},
+  {id:"cat_email-tools",name:"邮件工具",slug:"email-tools",description:"邮件营销、临时邮箱和邮件管理",icon:"📧",parent_id:null,level:1,sort_order:25,website_count:0},
+  {id:"cat_hosting",name:"域名主机",slug:"hosting",description:"域名注册、虚拟主机和服务器",icon:"🌐",parent_id:null,level:1,sort_order:26,website_count:0},
+  {id:"cat_low-code",name:"低代码平台",slug:"low-code",description:"无代码/低代码建站和应用开发",icon:"⚡",parent_id:null,level:1,sort_order:27,website_count:0},
+  {id:"cat_translation",name:"翻译语言",slug:"translation",description:"在线翻译、语言学习和本地化",icon:"🌍",parent_id:null,level:1,sort_order:28,website_count:0},
+  {id:"cat_file-tools",name:"文件工具",slug:"file-tools",description:"PDF 处理、格式转换和文件传输",icon:"📁",parent_id:null,level:1,sort_order:29,website_count:0},
+  {id:"cat_health",name:"健康医疗",slug:"health",description:"健康管理、医疗信息和健身工具",icon:"🏥",parent_id:null,level:1,sort_order:30,website_count:0},
+  // AI 子分类
+  {id:"cat_ai-chat",name:"对话 AI",slug:"ai-chat",description:"ChatGPT、Claude 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:1,website_count:0},
+  {id:"cat_ai-image",name:"AI 绘画",slug:"ai-image",description:"Midjourney、DALL-E 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:2,website_count:0},
+  {id:"cat_ai-coding",name:"AI 编程",slug:"ai-coding",description:"Cursor、Copilot 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:3,website_count:0},
+  {id:"cat_ai-video",name:"AI 视频",slug:"ai-video",description:"Runway、Pika 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:4,website_count:0},
+  {id:"cat_ai-audio",name:"AI 音频",slug:"ai-audio",description:"ElevenLabs、Suno 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:5,website_count:0},
+  {id:"cat_ai-search",name:"AI 搜索",slug:"ai-search",description:"Perplexity、You.com 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:6,website_count:0},
+  {id:"cat_ai-writing",name:"AI 写作",slug:"ai-writing",description:"Jasper、Copy.ai 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:7,website_count:0},
+  {id:"cat_ai-platform",name:"大模型平台",slug:"ai-platform",description:"OpenAI API、Hugging Face 等",icon:null,parent_id:"cat_ai-tools",level:2,sort_order:8,website_count:0},
+  // 开发者子分类
+  {id:"cat_dev-frontend",name:"前端框架",slug:"dev-frontend",description:"React、Vue 等",icon:null,parent_id:"cat_developer-tools",level:2,sort_order:1,website_count:0},
+  {id:"cat_dev-backend",name:"后端框架",slug:"dev-backend",description:"Next.js、Django 等",icon:null,parent_id:"cat_developer-tools",level:2,sort_order:2,website_count:0},
+  {id:"cat_dev-database",name:"数据库",slug:"dev-database",description:"PostgreSQL、MySQL 等",icon:null,parent_id:"cat_developer-tools",level:2,sort_order:3,website_count:0},
+  {id:"cat_dev-api",name:"API 工具",slug:"dev-api",description:"Postman、Swagger 等",icon:null,parent_id:"cat_developer-tools",level:2,sort_order:4,website_count:0},
+  {id:"cat_dev-ide",name:"IDE/编辑器",slug:"dev-ide",description:"VS Code、JetBrains 等",icon:null,parent_id:"cat_developer-tools",level:2,sort_order:5,website_count:0},
+  {id:"cat_dev-devops",name:"DevOps",slug:"dev-devops",description:"Docker、K8s 等",icon:null,parent_id:"cat_developer-tools",level:2,sort_order:6,website_count:0},
+  // 设计子分类
+  {id:"cat_design-ui",name:"UI 设计工具",slug:"design-ui",description:"Figma、Sketch 等",icon:null,parent_id:"cat_design-resources",level:2,sort_order:1,website_count:0},
+  {id:"cat_design-icons",name:"图标库",slug:"design-icons",description:"Iconify、Feather 等",icon:null,parent_id:"cat_design-resources",level:2,sort_order:2,website_count:0},
+  {id:"cat_design-inspiration",name:"设计灵感",slug:"design-inspiration",description:"Dribbble、Behance 等",icon:null,parent_id:"cat_design-resources",level:2,sort_order:3,website_count:0},
+  // 效率子分类
+  {id:"cat_prod-project",name:"项目管理",slug:"prod-project",description:"Jira、Linear 等",icon:null,parent_id:"cat_productivity",level:2,sort_order:1,website_count:0},
+  {id:"cat_prod-notes",name:"笔记工具",slug:"prod-notes",description:"Notion、Obsidian 等",icon:null,parent_id:"cat_productivity",level:2,sort_order:2,website_count:0},
+  {id:"cat_prod-docs",name:"在线文档",slug:"prod-docs",description:"Google Docs 等",icon:null,parent_id:"cat_productivity",level:2,sort_order:3,website_count:0},
+  {id:"cat_prod-automation",name:"自动化",slug:"prod-automation",description:"Zapier、Make 等",icon:null,parent_id:"cat_productivity",level:2,sort_order:4,website_count:0},
+  // 社交子分类
+  {id:"cat_social-general",name:"综合社交",slug:"social-general",description:"微信、Twitter 等",icon:null,parent_id:"cat_social-media",level:2,sort_order:1,website_count:0},
+  {id:"cat_social-messaging",name:"即时通讯",slug:"social-messaging",description:"WhatsApp、Telegram 等",icon:null,parent_id:"cat_social-media",level:2,sort_order:2,website_count:0},
+  {id:"cat_social-community",name:"内容社区",slug:"social-community",description:"Reddit、小红书 等",icon:null,parent_id:"cat_social-media",level:2,sort_order:3,website_count:0},
+  // 影音子分类
+  {id:"cat_ent-video",name:"视频平台",slug:"ent-video",description:"YouTube、B站 等",icon:null,parent_id:"cat_entertainment",level:2,sort_order:1,website_count:0},
+  {id:"cat_ent-music",name:"音乐平台",slug:"ent-music",description:"Spotify、网易云 等",icon:null,parent_id:"cat_entertainment",level:2,sort_order:2,website_count:0},
+  {id:"cat_ent-gaming",name:"游戏平台",slug:"ent-gaming",description:"Steam、Epic 等",icon:null,parent_id:"cat_entertainment",level:2,sort_order:3,website_count:0},
+  // 电商子分类
+  {id:"cat_shop-general",name:"综合电商",slug:"shop-general",description:"淘宝、Amazon 等",icon:null,parent_id:"cat_ecommerce",level:2,sort_order:1,website_count:0},
+  {id:"cat_shop-cross-border",name:"跨境电商",slug:"shop-cross-border",description:"AliExpress、Shopee 等",icon:null,parent_id:"cat_ecommerce",level:2,sort_order:2,website_count:0},
+  // 学习子分类
+  {id:"cat_learn-courses",name:"在线课程",slug:"learn-courses",description:"Coursera、Udemy 等",icon:null,parent_id:"cat_learning",level:2,sort_order:1,website_count:0},
+  {id:"cat_learn-coding",name:"编程学习",slug:"learn-coding",description:"freeCodeCamp 等",icon:null,parent_id:"cat_learning",level:2,sort_order:2,website_count:0},
+  // 云服务子分类
+  {id:"cat_cloud-public",name:"公有云",slug:"cloud-public",description:"AWS、GCP 等",icon:null,parent_id:"cat_cloud-services",level:2,sort_order:1,website_count:0},
+  {id:"cat_cloud-edge",name:"边缘计算",slug:"cloud-edge",description:"Cloudflare、Vercel 等",icon:null,parent_id:"cat_cloud-services",level:2,sort_order:2,website_count:0},
+  // 金融子分类
+  {id:"cat_fin-payment",name:"支付工具",slug:"fin-payment",description:"支付宝、PayPal 等",icon:null,parent_id:"cat_finance",level:2,sort_order:1,website_count:0},
+  {id:"cat_fin-crypto",name:"加密货币",slug:"fin-crypto",description:"Coinbase、Binance 等",icon:null,parent_id:"cat_finance",level:2,sort_order:2,website_count:0},
+];
+fs.writeFileSync(__dirname + '/../src/data-categories.json', JSON.stringify(cats), 'utf-8');
+console.log('Done: ' + cats.length + ' categories (' + cats.filter(c=>c.level===1).length + ' L1, ' + cats.filter(c=>c.level===2).length + ' L2)');

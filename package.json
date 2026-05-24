@@ -1,0 +1,42 @@
+{
+  "name": "site-nav",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:build-sql": "node scripts/build-seed-sql.js",
+    "db:apply-sql": "node scripts/apply-seed-sql.js",
+    "db:init": "node scripts/init-db.js",
+    "db:init:import": "node scripts/init-db.js --import",
+    "db:seed": "node scripts/apply-seed-sql.js",
+    "data:import": "node scripts/apply-seed-sql.js"
+  },
+  "dependencies": {
+    "csv-parse": "^6.2.1",
+    "drizzle-orm": "^0.30.0",
+    "mysql2": "^3.11.5",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.0",
+    "drizzle-kit": "^0.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.0.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.4.0"
+  }
+}

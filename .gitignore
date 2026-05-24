@@ -1,0 +1,29 @@
+node_modules/
+.next/
+.vercel/
+.wrangler/
+.turbo/
+.env
+.env.local
+.dev.vars
+*.log
+*.tsbuildinfo
+
+# Generated website import artifacts
+data/websites-import*.csv
+data/major-category-csv/
+data/cache/
+data/sites-local.json
+data/major-quota-supplement-report.json
+data/major-category-quota-report.json
+data/categories-local.json
+data/major-category-completion-progress.md
+drizzle-mysql/import-websites.sql
+drizzle-mysql/import-websites-chunks/
+
+# Local runtime files for deployment
+server/.env
+server/node_modules/
+server/dist/
+server/logs/
+server/.pm2/
