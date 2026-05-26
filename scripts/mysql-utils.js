@@ -3,8 +3,19 @@ const { loadDotEnv } = require('./env-utils');
 
 loadDotEnv();
 
+function cleanEnvValue(value) {
+  const trimmed = String(value || '').trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
 function parseMysqlUrl(databaseUrl) {
-  const parsed = new URL(databaseUrl);
+  const parsed = new URL(cleanEnvValue(databaseUrl));
   if (!['mysql:', 'mysql2:'].includes(parsed.protocol)) {
     throw new Error(`Unsupported database protocol: ${parsed.protocol}`);
   }
@@ -31,15 +42,15 @@ function parseMysqlUrl(databaseUrl) {
 }
 
 function resolveMysqlConfig(env = process.env) {
-  const directUrl = env.DATABASE_URL?.trim() || env.MYSQL_URL?.trim();
+  const directUrl = cleanEnvValue(env.DATABASE_URL || env.MYSQL_URL || '');
   if (directUrl) {
     return parseMysqlUrl(directUrl);
   }
 
-  const host = env.MYSQL_HOST?.trim();
-  const user = env.MYSQL_USER?.trim();
-  const password = env.MYSQL_PASSWORD ?? '';
-  const database = env.MYSQL_DATABASE?.trim();
+  const host = cleanEnvValue(env.MYSQL_HOST || '');
+  const user = cleanEnvValue(env.MYSQL_USER || '');
+  const password = cleanEnvValue(env.MYSQL_PASSWORD || '');
+  const database = cleanEnvValue(env.MYSQL_DATABASE || '');
 
   if (!host || !user || !database) {
     return null;

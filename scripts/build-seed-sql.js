@@ -45,6 +45,66 @@ const DEFAULT_TAGS = [
   { id: 'tag_free', name: '免费精品', slug: 'free-pick', color: '#06b6d4' },
 ];
 
+const DERIVED_CATEGORY_CONFIG = new Map([
+  ['开发技术', { slug: 'developer-technology', parentName: '开发者工具' }],
+  ['数据智能', { slug: 'data-intelligence', parentName: '数据分析' }],
+  ['创意设计', { slug: 'creative-design', parentName: '设计资源' }],
+  ['教育培训', { slug: 'education-training', parentName: '学习教育' }],
+  ['内容媒体', { slug: 'content-media', parentName: '新闻资讯' }],
+  ['购物平台', { slug: 'shopping-platforms', parentName: '电商购物' }],
+  ['商家工具', { slug: 'merchant-tools', parentName: '电商购物' }],
+  ['设计素材', { slug: 'design-assets', parentName: '设计资源' }],
+  ['企业服务', { slug: 'business-services', parentName: null }],
+  ['内容创作', { slug: 'content-creation', parentName: '写作工具' }],
+  ['数据洞察', { slug: 'data-insights', parentName: '数据分析' }],
+  ['数字出版', { slug: 'digital-publishing', parentName: '新闻资讯' }],
+  ['设计协作', { slug: 'design-collaboration', parentName: '设计资源' }],
+  ['社群运营', { slug: 'community-operations', parentName: '社交媒体' }],
+  ['电商服务', { slug: 'ecommerce-services', parentName: '电商购物' }],
+  ['短视频工具', { slug: 'short-video-tools', parentName: '视频工具' }],
+  ['项目协作', { slug: 'project-collaboration', parentName: '效率办公' }],
+  ['图片编辑', { slug: 'image-editing', parentName: '图片素材' }],
+  ['API 开发', { slug: 'api-development', parentName: '开发者工具' }],
+  ['测试自动化', { slug: 'test-automation', parentName: '开发者工具' }],
+  ['企业知识库', { slug: 'business-knowledge-base', parentName: '企业服务' }],
+  ['供应链管理', { slug: 'supply-chain-management', parentName: '企业服务' }],
+  ['人力资源软件', { slug: 'hr-software', parentName: '企业服务' }],
+  ['客户成功', { slug: 'customer-success', parentName: '企业服务' }],
+  ['财务报销', { slug: 'expense-management', parentName: '企业服务' }],
+  ['播客音频', { slug: 'podcast-audio', parentName: '影音娱乐' }],
+  ['低代码开发', { slug: 'low-code-development', parentName: '低代码平台' }],
+  ['技术服务', { slug: 'technical-services', parentName: '开发者工具' }],
+  ['字体图标', { slug: 'fonts-icons', parentName: '设计资源' }],
+  ['UI 组件库', { slug: 'ui-component-libraries', parentName: '设计资源' }],
+  ['视频剪辑', { slug: 'video-editing', parentName: '视频工具' }],
+  ['电商营销', { slug: 'ecommerce-marketing', parentName: '营销推广' }],
+  ['数字娱乐', { slug: 'digital-entertainment', parentName: '影音娱乐' }],
+  ['CMS 系统', { slug: 'cms-systems', parentName: '低代码平台' }],
+  ['餐饮管理', { slug: 'restaurant-management', parentName: '企业服务' }],
+  ['测试工具', { slug: 'testing-tools', parentName: '开发者工具' }],
+  ['独立站建站', { slug: 'independent-site-builders', parentName: '域名主机' }],
+  ['法律服务', { slug: 'legal-services', parentName: '企业服务' }],
+  ['高校资源', { slug: 'university-resources', parentName: '学习教育' }],
+  ['技术文档', { slug: 'technical-documentation', parentName: '开发者工具' }],
+  ['建站工具', { slug: 'site-building-tools', parentName: '域名主机' }],
+  ['科技媒体', { slug: 'tech-media', parentName: '新闻资讯' }],
+  ['科研学术', { slug: 'research-academia', parentName: '学习教育' }],
+  ['美食餐饮', { slug: 'food-dining', parentName: '生活服务' }],
+  ['商业服务', { slug: 'commercial-services', parentName: '企业服务' }],
+  ['数据库工具', { slug: 'database-tools', parentName: '开发者工具' }],
+  ['数据库管理', { slug: 'database-management', parentName: '开发者工具' }],
+  ['消费生活', { slug: 'consumer-lifestyle', parentName: '生活服务' }],
+  ['协作工具', { slug: 'collaboration-tools', parentName: '效率办公' }],
+  ['游戏娱乐', { slug: 'gaming-entertainment', parentName: '影音娱乐' }],
+  ['远程会议', { slug: 'remote-meetings', parentName: '远程办公' }],
+  ['云计算主机', { slug: 'cloud-hosting', parentName: '云服务' }],
+  ['云原生运维', { slug: 'cloud-native-ops', parentName: '云服务' }],
+  ['在线工具', { slug: 'online-tools', parentName: '效率办公' }],
+  ['知识产权', { slug: 'intellectual-property', parentName: '企业服务' }],
+  ['Firefox 扩展', { slug: 'firefox-extensions', parentName: '开发者工具' }],
+  ['UI 设计', { slug: 'ui-design', parentName: '设计资源' }],
+]);
+
 const CATEGORY_SYNONYMS = new Map([
   ['开发技术', '开发者工具'],
   ['数据智能', '数据分析'],
@@ -75,6 +135,10 @@ const OPERATION_MARKERS = new Set([
   '海外网站',
   '国内网站',
   '已补全',
+  '主类合并',
+  '配额补充',
+  '违规清理后配额回补',
+  '可访问网站',
   '热门',
   '推荐',
 ]);
@@ -208,9 +272,81 @@ function buildCategoryLookup(categories) {
   }
   for (const [from, to] of CATEGORY_SYNONYMS.entries()) {
     const targetId = lookup.get(normalizeLookupKey(to));
-    if (targetId) lookup.set(normalizeLookupKey(from), targetId);
+    const fromKey = normalizeLookupKey(from);
+    if (targetId && !lookup.has(fromKey)) lookup.set(fromKey, targetId);
   }
   return lookup;
+}
+
+async function collectRawCategoryNames(filePath, names) {
+  if (!fs.existsSync(filePath)) return;
+
+  const parser = fs.createReadStream(filePath, { encoding: 'utf8' }).pipe(parse({
+    columns: true,
+    skip_empty_lines: true,
+    trim: true,
+    relax_quotes: true,
+  }));
+
+  for await (const record of parser) {
+    for (let index = 1; index <= 8; index += 1) {
+      const raw = String(record[`category_${index}`] || '').trim();
+      if (!raw || OPERATION_MARKERS.has(raw)) continue;
+      names.add(raw);
+    }
+  }
+}
+
+async function buildFullCategoryList(baseCategories) {
+  const categories = baseCategories.map((category) => ({ ...category }));
+  const byName = new Map(categories.map((category) => [normalizeLookupKey(category.name), category]));
+  const bySlug = new Map(categories.map((category) => [category.slug, category]));
+  const rawNames = new Set();
+
+  await collectRawCategoryNames(CSV_FILE, rawNames);
+
+  for (const rawName of [...rawNames].sort((left, right) => left.localeCompare(right, 'zh-CN'))) {
+    const rawKey = normalizeLookupKey(rawName);
+    if (byName.has(rawKey)) continue;
+
+    const config = DERIVED_CATEGORY_CONFIG.get(rawName) || {};
+    const parent = config.parentName ? byName.get(normalizeLookupKey(config.parentName)) : null;
+    const slug = config.slug || `extra-${createHash('sha1').update(rawName).digest('hex').slice(0, 10)}`;
+    let uniqueSlug = slug;
+    let suffix = 2;
+    while (bySlug.has(uniqueSlug)) {
+      uniqueSlug = `${slug}-${suffix}`;
+      suffix += 1;
+    }
+
+    const category = {
+      id: `cat_${uniqueSlug.replace(/[^a-z0-9_-]/gi, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')}`,
+      name: rawName,
+      slug: uniqueSlug,
+      description: `${rawName}相关网站、工具和在线资源。`,
+      icon: null,
+      parent_id: parent?.id || null,
+      level: parent ? 2 : 1,
+      sort_order: categories.length + 1,
+      website_count: 0,
+    };
+
+    categories.push(category);
+    byName.set(rawKey, category);
+    bySlug.set(uniqueSlug, category);
+  }
+
+  for (const category of categories) {
+    const config = DERIVED_CATEGORY_CONFIG.get(category.name);
+    if (!config?.parentName) continue;
+    const parent = byName.get(normalizeLookupKey(config.parentName));
+    if (parent && parent.id !== category.id) {
+      category.parent_id = parent.id;
+      category.level = 2;
+    }
+  }
+
+  return categories;
 }
 
 function pickCategoryIds(record, categoryLookup) {
@@ -428,10 +564,11 @@ function uniqueRows(rows) {
 async function main() {
   ensureCleanDir(OUTPUT_DIR);
 
-  const categories = readJson(CATEGORY_FILE);
-  if (!categories.length) {
+  const baseCategories = readJson(CATEGORY_FILE);
+  if (!baseCategories.length) {
     throw new Error('Missing categories. Expected src/data-categories.json.');
   }
+  const categories = await buildFullCategoryList(baseCategories);
 
   const categoryLookup = buildCategoryLookup(categories);
   const state = {
