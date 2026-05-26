@@ -125,6 +125,213 @@ const CATEGORY_SYNONYMS = new Map([
   ['独立站建站', '域名主机'],
 ]);
 
+const RAW_CATEGORY_IMPLIED_SLUGS = new Map([
+  ['API 开发', ['dev-api']],
+  ['测试自动化', ['dev-devops']],
+  ['测试工具', ['dev-devops']],
+  ['数据库工具', ['dev-database']],
+  ['数据库管理', ['dev-database']],
+  ['UI 组件库', ['dev-frontend', 'design-ui']],
+  ['UI 设计', ['design-ui']],
+  ['字体图标', ['design-icons']],
+  ['设计素材', ['design-icons']],
+  ['设计协作', ['design-ui', 'prod-project']],
+  ['项目协作', ['prod-project']],
+  ['企业知识库', ['prod-notes', 'prod-docs']],
+  ['内容创作', ['ai-writing', 'prod-docs']],
+  ['短视频工具', ['ent-video']],
+  ['视频剪辑', ['ent-video']],
+  ['播客音频', ['ent-music']],
+  ['购物平台', ['shop-general']],
+  ['商家工具', ['shop-general']],
+  ['电商服务', ['shop-general']],
+  ['电商营销', ['shop-general']],
+  ['在线课程', ['learn-courses']],
+  ['编程学习', ['learn-coding']],
+  ['云计算主机', ['cloud-public']],
+  ['云原生运维', ['cloud-edge', 'dev-devops']],
+  ['低代码开发', ['dev-frontend']],
+  ['远程会议', ['social-messaging', 'prod-project']],
+]);
+
+const SUBCATEGORY_RULES = [
+  {
+    slug: 'ai-chat',
+    contextSlugs: ['ai-tools', 'data-intelligence', 'search-engines'],
+    any: ['chatgpt', 'claude', 'gemini', '对话', '聊天', '问答', '智能助手', 'assistant'],
+  },
+  {
+    slug: 'ai-image',
+    contextSlugs: ['ai-tools', 'data-intelligence', 'creative-design', 'design-resources', 'images-stock', 'image-editing'],
+    any: ['midjourney', 'dall-e', 'dalle', 'stable diffusion', 'ai 绘画', 'ai绘画', '图像生成', '图片生成', '文生图', '图片', '图像'],
+  },
+  {
+    slug: 'ai-coding',
+    contextSlugs: ['ai-tools', 'data-intelligence', 'developer-tools', 'developer-technology', 'api-development', 'open-source'],
+    any: ['cursor', 'copilot', 'ai 编程', 'ai编程', '代码助手', '编程助手', 'code assistant', 'coding assistant', '代码生成', '编程', '代码'],
+  },
+  {
+    slug: 'ai-video',
+    contextSlugs: ['ai-tools', 'video-tools', 'short-video-tools'],
+    any: ['runway', 'pika', 'sora', 'kling', 'veo', 'ai 视频', 'ai视频', '视频生成', '文生视频'],
+  },
+  {
+    slug: 'ai-audio',
+    contextSlugs: ['ai-tools', 'podcast-audio', 'entertainment'],
+    any: ['elevenlabs', 'suno', 'udio', 'tts', '语音合成', '音频生成', 'ai 音频', 'ai音频', '播客音频'],
+  },
+  {
+    slug: 'ai-search',
+    contextSlugs: ['ai-tools', 'search-engines', 'data-intelligence'],
+    any: ['perplexity', 'you.com', 'bing', 'ai 搜索', 'ai搜索', '搜索', '问答搜索', '智能搜索'],
+  },
+  {
+    slug: 'ai-writing',
+    contextSlugs: ['ai-tools', 'writing-tools', 'content-creation'],
+    any: ['jasper', 'copy.ai', '写作', '文案', '内容生成', 'ai 写作', 'ai写作', '博客生成'],
+  },
+  {
+    slug: 'ai-platform',
+    contextSlugs: ['ai-tools', 'developer-tools', 'data-intelligence'],
+    any: ['openai', 'hugging face', 'huggingface', 'anthropic', '大模型', '模型平台', 'llm', 'api'],
+  },
+  {
+    slug: 'dev-frontend',
+    contextSlugs: ['developer-tools', 'developer-technology', 'open-source', 'learn-coding'],
+    any: ['前端', 'react', 'vue', 'angular', 'svelte', 'javascript', 'typescript', 'css', 'html', '组件库', 'ui 组件'],
+  },
+  {
+    slug: 'dev-backend',
+    contextSlugs: ['developer-tools', 'developer-technology', 'open-source'],
+    any: ['后端', 'node.js', 'nodejs', 'django', 'flask', 'fastapi', 'laravel', 'rails', 'spring', 'server side', '服务器端'],
+  },
+  {
+    slug: 'dev-database',
+    contextSlugs: ['developer-tools', 'developer-technology', 'data-analytics', 'database-tools', 'database-management'],
+    any: ['数据库', 'database', 'mysql', 'postgres', 'postgresql', 'redis', 'mongodb', 'sql', 'supabase'],
+  },
+  {
+    slug: 'dev-api',
+    contextSlugs: ['developer-tools', 'developer-technology', 'api-development', 'testing-tools', 'test-automation'],
+    any: ['api', '接口', 'postman', 'swagger', 'openapi', 'graphql', 'webhook', '接口测试'],
+  },
+  {
+    slug: 'dev-ide',
+    contextSlugs: ['developer-tools', 'developer-technology'],
+    any: ['ide', '编辑器', 'editor', 'vscode', 'vs code', 'visual studio code', 'jetbrains', 'intellij', '代码编辑'],
+  },
+  {
+    slug: 'dev-devops',
+    contextSlugs: ['developer-tools', 'developer-technology', 'cloud-services', 'cloud-native-ops', 'test-automation'],
+    any: ['devops', 'docker', 'kubernetes', 'k8s', 'ci/cd', 'cicd', 'terraform', '部署', '运维', '监控', '自动化测试'],
+  },
+  {
+    slug: 'design-ui',
+    contextSlugs: ['design-resources', 'creative-design', 'ui-design', 'ui-component-libraries'],
+    any: ['figma', 'sketch', 'ui', 'ux', '原型', '界面设计', '设计工具', 'wireframe', 'prototype'],
+  },
+  {
+    slug: 'design-icons',
+    contextSlugs: ['design-resources', 'design-assets', 'fonts-icons', 'images-stock'],
+    any: ['图标', 'icon', 'icons', 'svg', '字体图标', 'iconify', 'feather'],
+  },
+  {
+    slug: 'design-inspiration',
+    contextSlugs: ['design-resources', 'creative-design', 'design-assets'],
+    any: ['dribbble', 'behance', '灵感', 'inspiration', 'showcase', '设计参考'],
+  },
+  {
+    slug: 'prod-project',
+    contextSlugs: ['productivity', 'project-collaboration', 'collaboration-tools', 'remote-work'],
+    any: ['项目管理', '任务管理', 'jira', 'linear', 'asana', 'trello', '看板', '协作', '流程'],
+  },
+  {
+    slug: 'prod-notes',
+    contextSlugs: ['productivity', 'business-knowledge-base', 'writing-tools'],
+    any: ['notion', 'obsidian', '笔记', '知识库', 'note', 'notes', '记录'],
+  },
+  {
+    slug: 'prod-docs',
+    contextSlugs: ['productivity', 'business-knowledge-base', 'technical-documentation', 'writing-tools'],
+    any: ['文档', 'docs', 'document', 'google docs', 'wiki', '在线文档', '技术文档'],
+  },
+  {
+    slug: 'prod-automation',
+    contextSlugs: ['productivity', 'online-tools', 'project-collaboration'],
+    any: ['自动化', 'automation', 'zapier', 'make.com', 'make ', 'workflow', '工作流'],
+  },
+  {
+    slug: 'social-general',
+    contextSlugs: ['social-media', 'content-media'],
+    any: ['社交媒体', 'social media', 'twitter', 'x.com', 'facebook', 'instagram', '小红书', '微博'],
+  },
+  {
+    slug: 'social-messaging',
+    contextSlugs: ['social-media', 'remote-work', 'productivity', 'project-collaboration', 'collaboration-tools'],
+    any: ['whatsapp', 'telegram', '微信', 'slack', 'discord', '聊天', '即时通讯', 'message', 'messaging', '团队沟通', '视频会议'],
+  },
+  {
+    slug: 'social-community',
+    contextSlugs: ['social-media', 'community-operations', 'content-media'],
+    any: ['reddit', '论坛', '社区', 'community', '社群', 'forum'],
+  },
+  {
+    slug: 'ent-video',
+    contextSlugs: ['entertainment', 'video-tools', 'short-video-tools', 'digital-entertainment'],
+    any: ['youtube', 'bilibili', '视频', '直播', 'streaming', 'video', '短视频'],
+  },
+  {
+    slug: 'ent-music',
+    contextSlugs: ['entertainment', 'podcast-audio', 'digital-entertainment'],
+    any: ['spotify', '音乐', 'music', '音频', 'podcast', '播客'],
+  },
+  {
+    slug: 'ent-gaming',
+    contextSlugs: ['entertainment', 'gaming-entertainment', 'digital-entertainment'],
+    any: ['steam', 'epic games', '游戏', 'gaming', 'game'],
+  },
+  {
+    slug: 'shop-general',
+    contextSlugs: ['ecommerce', 'shopping-platforms', 'merchant-tools', 'ecommerce-services'],
+    any: ['amazon', '淘宝', '京东', '购物', '电商', '商城', 'shop', 'shopping', 'marketplace'],
+  },
+  {
+    slug: 'shop-cross-border',
+    contextSlugs: ['ecommerce', 'ecommerce-services', 'shopping-platforms'],
+    any: ['跨境', 'aliexpress', 'shopee', 'shopify', 'temu', '跨境电商', 'cross-border'],
+  },
+  {
+    slug: 'learn-courses',
+    contextSlugs: ['learning', 'education-training', 'university-resources'],
+    any: ['在线课程', '课程', 'coursera', 'udemy', 'edx', 'khan academy', '学习平台', 'course'],
+  },
+  {
+    slug: 'learn-coding',
+    contextSlugs: ['learning', 'developer-tools', 'developer-technology', 'education-training'],
+    any: ['freecodecamp', '编程学习', '编程课程', 'coding course', 'learn coding', '代码学习', '编程', '代码', '开发者'],
+  },
+  {
+    slug: 'cloud-public',
+    contextSlugs: ['cloud-services', 'cloud-hosting'],
+    any: ['aws', 'azure', 'google cloud', 'gcp', '阿里云', '腾讯云', '公有云', '云计算', '云服务'],
+  },
+  {
+    slug: 'cloud-edge',
+    contextSlugs: ['cloud-services', 'cloud-native-ops', 'hosting'],
+    any: ['cloudflare', 'vercel', 'netlify', 'cdn', '边缘计算', 'edge', '边缘网络'],
+  },
+  {
+    slug: 'fin-payment',
+    contextSlugs: ['finance', 'expense-management', 'ecommerce-services'],
+    any: ['支付', 'paypal', 'stripe', 'alipay', '支付宝', '微信支付', 'payment'],
+  },
+  {
+    slug: 'fin-crypto',
+    contextSlugs: ['finance'],
+    any: ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'web3', '加密货币', '区块链', 'coinbase', 'binance'],
+  },
+];
+
 const OPERATION_MARKERS = new Set([
   '单一主类',
   '配额重分配',
@@ -278,6 +485,10 @@ function buildCategoryLookup(categories) {
   return lookup;
 }
 
+function buildSlugLookup(categories) {
+  return new Map(categories.map((category) => [category.slug, category.id]));
+}
+
 async function collectRawCategoryNames(filePath, names) {
   if (!fs.existsSync(filePath)) return;
 
@@ -362,6 +573,57 @@ function pickCategoryIds(record, categoryLookup) {
   return ids;
 }
 
+function addCategoryId(ids, categoryId) {
+  if (categoryId && !ids.includes(categoryId)) {
+    ids.push(categoryId);
+  }
+}
+
+function recordSearchText(record) {
+  const fields = [
+    'name',
+    'short_summary',
+    'full_description',
+    'keywords',
+    'tags',
+    'company',
+    'alternatives',
+    'target_audience',
+    'features',
+    'platforms',
+  ];
+  return fields.map((field) => record[field] || '').join(' ').toLowerCase();
+}
+
+function applyPresetSubcategoryRules(record, ids, state) {
+  const slugSet = new Set(ids
+    .map((id) => state.categoryById.get(id)?.slug)
+    .filter(Boolean));
+
+  for (let index = 1; index <= 8; index += 1) {
+    const raw = String(record[`category_${index}`] || '').trim();
+    if (!raw || OPERATION_MARKERS.has(raw)) continue;
+    const impliedSlugs = RAW_CATEGORY_IMPLIED_SLUGS.get(raw);
+    if (!impliedSlugs) continue;
+    for (const slug of impliedSlugs) {
+      const categoryId = state.categoryBySlug.get(slug);
+      addCategoryId(ids, categoryId);
+      if (categoryId) slugSet.add(slug);
+    }
+  }
+
+  const text = recordSearchText(record);
+  for (const rule of SUBCATEGORY_RULES) {
+    if (slugSet.has(rule.slug)) continue;
+    const hasContext = !rule.contextSlugs?.length || rule.contextSlugs.some((slug) => slugSet.has(slug));
+    if (!hasContext) continue;
+    if (!rule.any.some((term) => text.includes(term.toLowerCase()))) continue;
+    const categoryId = state.categoryBySlug.get(rule.slug);
+    addCategoryId(ids, categoryId);
+    if (categoryId) slugSet.add(rule.slug);
+  }
+}
+
 function addKeyword(keywordMap, value) {
   const name = String(value || '').trim();
   const normalized = normalizeLookupKey(name);
@@ -429,6 +691,7 @@ function upsertWebsiteFromRecord(state, record, source) {
     const fallback = state.categoryLookup.get(normalizeLookupKey(record.category_1 || '资源导航'));
     if (fallback) categoryIds.push(fallback);
   }
+  applyPresetSubcategoryRules(record, categoryIds, state);
 
   const keywordIds = [];
   for (const keyword of splitList(record.keywords)) {
@@ -574,6 +837,7 @@ async function main() {
   const state = {
     categoryLookup,
     categoryById: new Map(categories.map((category) => [category.id, category])),
+    categoryBySlug: buildSlugLookup(categories),
     domainSet: new Set(),
     keywordMap: new Map(),
     tagMap: new Map(DEFAULT_TAGS.map((tag) => [
