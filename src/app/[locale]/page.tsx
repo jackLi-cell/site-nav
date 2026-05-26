@@ -74,6 +74,7 @@ export default function HomePage() {
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  const [regionFallback, setRegionFallback] = useState(false);
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState('default');
   const [searchQ, setSearchQ] = useState('');
@@ -109,6 +110,7 @@ export default function HomePage() {
       .then(json => {
         setSites(json.data || []);
         setTotal(json.pagination?.total || 0);
+        setRegionFallback(Boolean(json.regionFallback));
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -241,6 +243,11 @@ export default function HomePage() {
               <span className="ml-2">{total.toLocaleString()} {dict.home.sites}</span>
             </div>
           </div>
+          {regionFallback && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-md px-3 py-2 mb-3">
+              {dict.home.regionFallback}
+            </p>
+          )}
 
           {/* 搜索 + 排序 */}
           <div className="flex items-center gap-3">

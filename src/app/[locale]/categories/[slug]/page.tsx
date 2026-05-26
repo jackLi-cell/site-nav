@@ -28,6 +28,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [cat, setCat] = useState<Category>({});
   const [sites, setSites] = useState<Site[]>([]);
   const [total, setTotal] = useState(0);
+  const [regionFallback, setRegionFallback] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         setCat(json.category || {});
         setSites(json.data || []);
         setTotal(json.pagination?.total || 0);
+        setRegionFallback(Boolean(json.regionFallback));
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -65,6 +67,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       <p className="text-gray-600 mb-4">
         {region === 'china' ? dict.region.china : dict.region.overseas} · {total} {dict.home.sites}{cat.description ? ` · ${cat.description}` : ''}
       </p>
+      {regionFallback && (
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-md px-3 py-2 mb-4">
+          {dict.home.regionFallback}
+        </p>
+      )}
 
       <div className="flex gap-2 mb-6">
         {tabBtn('default', dict.home.sortDefault)}

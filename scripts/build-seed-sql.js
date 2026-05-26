@@ -163,12 +163,12 @@ const SUBCATEGORY_RULES = [
   {
     slug: 'ai-image',
     contextSlugs: ['ai-tools', 'data-intelligence', 'creative-design', 'design-resources', 'images-stock', 'image-editing'],
-    any: ['midjourney', 'dall-e', 'dalle', 'stable diffusion', 'ai 绘画', 'ai绘画', '图像生成', '图片生成', '文生图', '图片', '图像'],
+    any: ['midjourney', 'dall-e', 'stable diffusion', 'ai 绘画', 'ai绘画', '图像生成', '图片生成', '文生图'],
   },
   {
     slug: 'ai-coding',
     contextSlugs: ['ai-tools', 'data-intelligence', 'developer-tools', 'developer-technology', 'api-development', 'open-source'],
-    any: ['cursor', 'copilot', 'ai 编程', 'ai编程', '代码助手', '编程助手', 'code assistant', 'coding assistant', '代码生成', '编程', '代码'],
+    any: ['cursor', 'codeium', 'tabnine', 'replit', 'sourcegraph', 'coderabbit', 'codium', 'github copilot', 'ai 编程', 'ai编程', '代码助手', '编程助手', 'code assistant', 'coding assistant', '代码生成'],
   },
   {
     slug: 'ai-video',

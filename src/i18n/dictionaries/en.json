@@ -33,6 +33,7 @@
     "loading": "Loading...",
     "noSites": "No sites in this category",
     "noSitesTip": "Try switching to another category or region",
+    "regionFallback": "No matches in the selected region, so results from all regions are shown.",
     "visits": "visits",
     "visit": "Visit",
     "prevPage": "Previous",

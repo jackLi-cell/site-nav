@@ -33,6 +33,7 @@
     "loading": "加载中...",
     "noSites": "该分类暂无网站",
     "noSitesTip": "试试切换其他分类或区域",
+    "regionFallback": "当前区域暂无匹配网站，已临时显示全部区域结果。",
     "visits": "访问",
     "visit": "访问",
     "prevPage": "上一页",

@@ -23,7 +23,8 @@ export async function GET(
   const url = new URL(request.url);
   const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
   const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')));
-  const region = url.searchParams.get('region') || 'china';
+  const requestedRegion = url.searchParams.get('region') || 'china';
+  const shouldFilterRegion = requestedRegion === 'china' || requestedRegion === 'overseas';
   const tab = url.searchParams.get('tab') || 'default';
   const offset = (page - 1) * limit;
 
@@ -35,15 +36,24 @@ export async function GET(
       return Response.json({ error: { code: 'NOT_FOUND', message: '分类不存在' } }, { status: 404 });
     }
     let filtered = getSitesData().filter((s: any) =>
-      s.region === region && (s.categories || []).includes(slug)
+      (!shouldFilterRegion || s.region === requestedRegion) && (s.categories || []).includes(slug)
     );
+    const requestedTotal = filtered.length;
+    let regionFallback = null;
+    if (shouldFilterRegion && requestedTotal === 0) {
+      const fallback = getSitesData().filter((s: any) => (s.categories || []).includes(slug));
+      if (fallback.length > 0) {
+        filtered = fallback;
+        regionFallback = { requestedRegion, effectiveRegion: 'all' };
+      }
+    }
     if (tab === 'latest') filtered = [...filtered].reverse();
     const total = filtered.length;
     const data = filtered.slice(offset, offset + limit).map((s: any) => ({
       id: s.id, name: s.name, slug: s.slug, url: s.url,
       shortSummary: s.short_summary, viewCount: s.view_count, createdAt: s.created_at,
     }));
-    return Response.json({ category, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    return Response.json({ category, data, regionFallback, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   }
 
   const category = await db
@@ -71,7 +81,14 @@ export async function GET(
   }
 
   const orderBy = tab === 'latest' ? [desc(websites.createdAt)] : [desc(websites.viewCount), asc(websites.name)];
-  const results = await db
+  const makeWhere = (filterRegion: boolean) => {
+    const conditions = [eq(websites.status, 'active'), eq(websiteCategories.categoryId, category[0].id)];
+    if (filterRegion && shouldFilterRegion) {
+      conditions.push(eq(websites.region, requestedRegion));
+    }
+    return and(...conditions);
+  };
+  const fetchResults = (filterRegion: boolean) => db
     .select({
       id: websites.id,
       name: websites.name,
@@ -89,20 +106,36 @@ export async function GET(
     })
     .from(websites)
     .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))
-    .where(and(eq(websites.status, 'active'), eq(websites.region, region), eq(websiteCategories.categoryId, category[0].id)))
+    .where(makeWhere(filterRegion))
     .orderBy(...orderBy)
     .limit(limit)
     .offset(offset);
-
-  const countResult = await db
+  const fetchCount = (filterRegion: boolean) => db
     .select({ count: sql<number>`count(distinct ${websites.id})` })
     .from(websites)
     .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))
-    .where(and(eq(websites.status, 'active'), eq(websites.region, region), eq(websiteCategories.categoryId, category[0].id)));
+    .where(makeWhere(filterRegion));
+
+  let results = await fetchResults(true);
+  let countResult = await fetchCount(true);
+  let total = Number(countResult[0]?.count || 0);
+  let regionFallback = null;
+
+  if (shouldFilterRegion && total === 0) {
+    const fallbackCount = await fetchCount(false);
+    const fallbackTotal = Number(fallbackCount[0]?.count || 0);
+    if (fallbackTotal > 0) {
+      results = await fetchResults(false);
+      countResult = fallbackCount;
+      total = fallbackTotal;
+      regionFallback = { requestedRegion, effectiveRegion: 'all' };
+    }
+  }
 
   return Response.json({
     category: category[0],
     data: results,
-    pagination: { page, limit, total: countResult[0]?.count || 0, totalPages: Math.ceil((countResult[0]?.count || 0) / limit) },
+    regionFallback,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   });
 }
