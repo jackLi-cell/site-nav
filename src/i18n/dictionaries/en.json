@@ -1,0 +1,104 @@
+{
+  "site": {
+    "name": "Site Directory",
+    "description": "A curated site directory and navigation platform featuring quality websites across 30+ categories including AI tools, developer tools, design resources, productivity, social media, entertainment, and e-commerce. Browse by category or search to find the sites you need.",
+    "tagline": "Discover Quality Web Resources",
+    "ogDescription": "Curated quality websites across 30+ categories with search and user submissions."
+  },
+  "nav": {
+    "home": "Home",
+    "allSites": "All Sites",
+    "categories": "Categories",
+    "tags": "Tags",
+    "favorites": "Favorites",
+    "submit": "Submit",
+    "login": "Login",
+    "register": "Register",
+    "account": "Account"
+  },
+  "footer": {
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "disclaimer": "Disclaimer",
+    "email": "Contact Email"
+  },
+  "home": {
+    "categoryNav": "Categories",
+    "search": "Search",
+    "searchPlaceholder": "Search {category}...",
+    "sortDefault": "Default",
+    "sortLatest": "Latest",
+    "sortHot": "Popular",
+    "loading": "Loading...",
+    "noSites": "No sites in this category",
+    "noSitesTip": "Try switching to another category or region",
+    "visits": "visits",
+    "visit": "Visit",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "sites": "sites",
+    "favorite": "Favorite",
+    "searchLabel": "Search"
+  },
+  "region": {
+    "china": "China",
+    "overseas": "Global"
+  },
+  "submit": {
+    "title": "Submit a Site",
+    "description": "Submit a quality website you've discovered. It will be listed after review.",
+    "siteName": "Site Name",
+    "siteUrl": "Site URL",
+    "siteDescription": "Description",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "submitBtn": "Submit",
+    "submitting": "Submitting...",
+    "success": "Submitted successfully, pending review",
+    "error": "Submission failed, please try again"
+  },
+  "categories": {
+    "title": "Categories",
+    "description": "Browse sites by category",
+    "siteCount": "{count} sites"
+  },
+  "tags": {
+    "title": "Tags",
+    "description": "Browse sites by tag"
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "description": "Your saved sites",
+    "empty": "No favorites yet",
+    "emptyTip": "Click the favorite button while browsing to save sites"
+  },
+  "sites": {
+    "title": "All Sites",
+    "description": "Browse all listed sites"
+  },
+  "search": {
+    "title": "Search Results",
+    "placeholder": "Search sites...",
+    "noResults": "No sites found",
+    "results": "Found {count} sites"
+  },
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loginBtn": "Login",
+    "noAccount": "Don't have an account?",
+    "register": "Register"
+  },
+  "register": {
+    "title": "Register",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "registerBtn": "Register",
+    "hasAccount": "Already have an account?",
+    "login": "Login"
+  }
+}

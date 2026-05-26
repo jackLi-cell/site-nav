@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env
+.env.local
+.vercel
+.turbo
+*.log
+*.tsbuildinfo
+data/websites-import*.csv
+data/major-category-csv
+data/cache
+drizzle-mysql/import-websites.sql
+drizzle-mysql/import-websites-chunks
