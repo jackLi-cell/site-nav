@@ -12,3 +12,4 @@ data/major-category-csv
 data/cache
 drizzle-mysql/import-websites.sql
 drizzle-mysql/import-websites-chunks
+storage/site-icons

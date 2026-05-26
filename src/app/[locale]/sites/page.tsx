@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRegion } from '@/components/region-switcher';
 import { useDictionary } from '@/i18n/dictionary-context';
+import { SiteAvatar } from '@/components/site-avatar';
 
 interface Site {
   id: string;
@@ -12,6 +13,8 @@ interface Site {
   url: string;
   shortSummary?: string;
   viewCount: number;
+  normalizedDomain?: string;
+  iconPath?: string | null;
 }
 
 export default function SitesPage() {
@@ -57,11 +60,20 @@ export default function SitesPage() {
         <div className="space-y-3">
           {sites.map(site => (
             <div key={site.slug} className="bg-white border border-gray-200 rounded-md p-4 flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <Link href={`${prefix}/sites/${site.slug}`} className="font-medium text-gray-900 hover:text-blue-600">
-                  {site.name}
-                </Link>
-                <p className="text-gray-500 text-xs mt-1 truncate">{site.shortSummary}</p>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <SiteAvatar
+                  name={site.name}
+                  normalizedDomain={site.normalizedDomain}
+                  iconPath={site.iconPath}
+                  className="w-11 h-11 rounded-lg"
+                  labelClassName="text-base font-bold"
+                />
+                <div className="flex-1 min-w-0">
+                  <Link href={`${prefix}/sites/${site.slug}`} className="font-medium text-gray-900 hover:text-blue-600">
+                    {site.name}
+                  </Link>
+                  <p className="text-gray-500 text-xs mt-1 truncate">{site.shortSummary}</p>
+                </div>
               </div>
               <div className="flex items-center gap-4 ml-4 shrink-0">
                 <span className="text-xs text-gray-400">{site.viewCount} {dict.home.visits}</span>

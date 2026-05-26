@@ -43,6 +43,8 @@ export async function GET(
       slug: websites.slug,
       shortSummary: websites.shortSummary,
       viewCount: websites.viewCount,
+      normalizedDomain: websites.normalizedDomain,
+      iconPath: websites.iconPath,
     })
     .from(websites)
     .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))
@@ -54,7 +56,15 @@ export async function GET(
         sql`${websiteCategories.categoryId} IN (${sql.join(categoryIdList.map(id => sql`${id}`), sql`, `)})`
       )
     )
-    .groupBy(websites.id, websites.name, websites.slug, websites.shortSummary, websites.viewCount)
+    .groupBy(
+      websites.id,
+      websites.name,
+      websites.slug,
+      websites.shortSummary,
+      websites.viewCount,
+      websites.normalizedDomain,
+      websites.iconPath
+    )
     .orderBy(desc(sql`count(*)`), desc(websites.viewCount))
     .limit(6);
 

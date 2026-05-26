@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useDictionary } from '@/i18n/dictionary-context';
+import { SiteAvatar } from '@/components/site-avatar';
 
 interface Site {
   id: string;
@@ -17,6 +18,7 @@ interface Site {
   status?: string;
   categories?: any[];
   keywords?: any[];
+  iconPath?: string | null;
 }
 
 export default function SiteDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -67,8 +69,19 @@ export default function SiteDetailPage({ params }: { params: Promise<{ slug: str
         <span className="mx-1">/</span>
         <span className="text-gray-700">{site.name}</span>
       </nav>
-      <h1 className="text-2xl font-bold mb-2">{site.name}</h1>
-      <p className="text-gray-600 mb-4">{site.shortSummary}</p>
+      <div className="flex items-start gap-4 mb-4">
+        <SiteAvatar
+          name={site.name}
+          normalizedDomain={site.normalizedDomain}
+          iconPath={site.iconPath}
+          className="w-16 h-16 rounded-2xl"
+          labelClassName="text-2xl font-bold"
+        />
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold mb-2">{site.name}</h1>
+          <p className="text-gray-600">{site.shortSummary}</p>
+        </div>
+      </div>
 
       {site.categories && site.categories.length > 0 && (
         <div className="mb-2">
@@ -118,9 +131,20 @@ export default function SiteDetailPage({ params }: { params: Promise<{ slug: str
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {similar.map((s: any) => (
               <Link key={s.slug} href={`${prefix}/sites/${s.slug}`} className="block p-3 bg-white border border-gray-200 rounded hover:border-blue-300 hover:no-underline">
-                <span className="font-medium text-sm text-gray-900">{s.name}</span>
-                <p className="text-xs text-gray-500 mt-1 truncate">{s.shortSummary}</p>
-                <span className="text-xs text-gray-400">{s.viewCount || 0} {dict.home.visits}</span>
+                <div className="flex items-center gap-3">
+                  <SiteAvatar
+                    name={s.name}
+                    normalizedDomain={s.normalizedDomain}
+                    iconPath={s.iconPath}
+                    className="w-10 h-10 rounded-lg"
+                    labelClassName="text-sm font-bold"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="font-medium text-sm text-gray-900 block truncate">{s.name}</span>
+                    <p className="text-xs text-gray-500 mt-1 truncate">{s.shortSummary}</p>
+                    <span className="text-xs text-gray-400">{s.viewCount || 0} {dict.home.visits}</span>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>

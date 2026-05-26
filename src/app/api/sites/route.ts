@@ -38,6 +38,10 @@ export async function GET(request: Request) {
       viewCount: s.view_count,
       createdAt: s.created_at,
       region: s.region,
+      normalizedDomain: s.normalized_domain,
+      normalized_domain: s.normalized_domain,
+      iconPath: s.icon_path || null,
+      icon_path: s.icon_path || null,
     }));
     return Response.json({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   }
@@ -62,6 +66,8 @@ export async function GET(request: Request) {
     star_rating: websites.starRating,
     normalizedDomain: websites.normalizedDomain,
     normalized_domain: websites.normalizedDomain,
+    iconPath: websites.iconPath,
+    icon_path: websites.iconPath,
   } as const;
 
   const conditions = [eq(websites.status, 'active'), eq(websites.region, region)];

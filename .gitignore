@@ -27,3 +27,4 @@ server/node_modules/
 server/dist/
 server/logs/
 server/.pm2/
+storage/site-icons/

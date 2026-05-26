@@ -20,5 +20,6 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/src/data-sites.json ./src/data-sites.json
 COPY --from=builder /app/src/data-categories.json ./src/data-categories.json
 COPY --from=builder /app/next.config.js ./next.config.js
+RUN mkdir -p /app/storage/site-icons
 EXPOSE 3000
 CMD ["npm", "run", "start", "--", "-H", "0.0.0.0", "-p", "3000"]

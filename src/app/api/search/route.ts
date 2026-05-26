@@ -33,6 +33,8 @@ export async function GET(request: Request) {
     const data = filtered.slice(offset, offset + limit).map((s: any) => ({
       id: s.id, name: s.name, slug: s.slug, url: s.url,
       shortSummary: s.short_summary, viewCount: s.view_count,
+      normalizedDomain: s.normalized_domain, normalized_domain: s.normalized_domain,
+      iconPath: s.icon_path || null, icon_path: s.icon_path || null,
     }));
     return Response.json({ data, pagination: { page, limit, total: filtered.length, totalPages: Math.ceil(filtered.length / limit) } });
   }
@@ -50,6 +52,8 @@ export async function GET(request: Request) {
       view_count: websites.viewCount,
       normalizedDomain: websites.normalizedDomain,
       normalized_domain: websites.normalizedDomain,
+      iconPath: websites.iconPath,
+      icon_path: websites.iconPath,
       region: websites.region,
     })
     .from(websites)
@@ -74,6 +78,7 @@ export async function GET(request: Request) {
       websites.shortSummary,
       websites.viewCount,
       websites.normalizedDomain,
+      websites.iconPath,
       websites.region
     )
     .orderBy(desc(websites.viewCount), asc(websites.name))

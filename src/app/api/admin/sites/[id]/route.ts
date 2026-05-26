@@ -28,6 +28,11 @@ export async function PUT(
   if (body.shortSummary !== undefined) updates.shortSummary = body.shortSummary;
   if (body.fullDescription !== undefined) updates.fullDescription = body.fullDescription;
   if (body.status) updates.status = body.status;
+  if (body.iconPath !== undefined) updates.iconPath = body.iconPath;
+  if (body.iconSourceUrl !== undefined) updates.iconSourceUrl = body.iconSourceUrl;
+  if (body.iconMimeType !== undefined) updates.iconMimeType = body.iconMimeType;
+  if (body.iconFetchStatus !== undefined) updates.iconFetchStatus = body.iconFetchStatus;
+  if (body.iconFetchedAt !== undefined) updates.iconFetchedAt = body.iconFetchedAt;
 
   await db.update(websites).set(updates).where(eq(websites.id, id));
 

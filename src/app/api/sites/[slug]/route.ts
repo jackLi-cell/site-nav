@@ -35,6 +35,8 @@ export async function GET(
         id: site.id, name: site.name, slug: site.slug, url: site.url,
         normalizedDomain: site.normalized_domain, shortSummary: site.short_summary,
         viewCount: site.view_count, createdAt: site.created_at, region: site.region,
+        iconPath: site.icon_path || null,
+        icon_path: site.icon_path || null,
         status: 'active', categories: cats, keywords: [],
       },
     });
@@ -57,6 +59,8 @@ export async function GET(
       created_at: websites.createdAt,
       region: websites.region,
       status: websites.status,
+      iconPath: websites.iconPath,
+      icon_path: websites.iconPath,
     })
     .from(websites)
     .where(and(eq(websites.slug, slug), eq(websites.status, 'active')))

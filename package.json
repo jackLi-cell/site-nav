@@ -16,7 +16,8 @@
     "db:init": "node scripts/init-db.js",
     "db:init:import": "node scripts/init-db.js --import",
     "db:seed": "node scripts/apply-seed-sql.js",
-    "data:import": "node scripts/apply-seed-sql.js"
+    "data:import": "node scripts/apply-seed-sql.js",
+    "icons:fetch": "node scripts/fetch-site-icons.js"
   },
   "dependencies": {
     "csv-parse": "^6.2.1",

@@ -32,6 +32,8 @@ export async function GET(request: Request) {
       star_rating: websites.starRating,
       viewCount: websites.viewCount,
       view_count: websites.viewCount,
+      iconPath: websites.iconPath,
+      icon_path: websites.iconPath,
       createdAt: websites.createdAt,
       created_at: websites.createdAt,
       updatedAt: websites.updatedAt,
@@ -82,6 +84,7 @@ export async function POST(request: Request) {
     status: 'active',
     starRating: 1,
     viewCount: 0,
+    iconFetchStatus: 'pending',
     createdAt: now,
     updatedAt: now,
   });

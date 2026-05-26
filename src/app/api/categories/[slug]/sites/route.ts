@@ -52,6 +52,8 @@ export async function GET(
     const data = filtered.slice(offset, offset + limit).map((s: any) => ({
       id: s.id, name: s.name, slug: s.slug, url: s.url,
       shortSummary: s.short_summary, viewCount: s.view_count, createdAt: s.created_at,
+      normalizedDomain: s.normalized_domain, normalized_domain: s.normalized_domain,
+      iconPath: s.icon_path || null, icon_path: s.icon_path || null,
     }));
     return Response.json({ category, data, regionFallback, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   }
@@ -103,6 +105,8 @@ export async function GET(
       region: websites.region,
       normalizedDomain: websites.normalizedDomain,
       normalized_domain: websites.normalizedDomain,
+      iconPath: websites.iconPath,
+      icon_path: websites.iconPath,
     })
     .from(websites)
     .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))

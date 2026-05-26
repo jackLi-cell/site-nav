@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRegion } from '@/components/region-switcher';
 import { useDictionary } from '@/i18n/dictionary-context';
+import { SiteAvatar } from '@/components/site-avatar';
 
 interface Category {
   id: string;
@@ -32,6 +33,8 @@ interface Site {
   is_free?: string;
   normalized_domain?: string;
   star_rating?: number;
+  iconPath?: string | null;
+  icon_path?: string | null;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -315,14 +318,17 @@ export default function HomePage() {
                 const views = site.viewCount || site.view_count || 0;
                 const domain = site.normalized_domain || '';
                 const star = site.star_rating || 1;
-                const initial = site.name.charAt(0).toUpperCase();
+                const iconPath = site.iconPath || site.icon_path || null;
                 return (
                   <div key={site.slug} className="bg-white rounded-xl border border-gray-100 p-4 hover:border-gray-200 hover:shadow-sm transition-all duration-200 group">
                     <div className="flex gap-4">
                       {/* 缩略图 */}
-                      <div className="w-14 h-14 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 group-hover:border-gray-200 transition-colors">
-                        <span className="text-xl font-bold text-gray-300 group-hover:text-gray-400 transition-colors">{initial}</span>
-                      </div>
+                      <SiteAvatar
+                        name={site.name}
+                        normalizedDomain={domain}
+                        iconPath={iconPath}
+                        className="w-14 h-14 rounded-xl group-hover:border-gray-200 transition-colors"
+                      />
                       {/* 内容 */}
                       <div className="flex-1 min-w-0">
                         {/* 第一行：名称 + 星级 + 访客 */}
