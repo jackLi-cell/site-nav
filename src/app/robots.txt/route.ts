@@ -1,7 +1,7 @@
-import { getSiteUrl } from '@/lib/site';
+import { getSiteUrlFromRequest } from '@/lib/site';
 
-export async function GET() {
-  const siteUrl = getSiteUrl();
+export async function GET(request: Request) {
+  const siteUrl = getSiteUrlFromRequest(request);
   const robotsTxt = `User-agent: *
 Allow: /
 Disallow: /admin

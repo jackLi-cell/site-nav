@@ -1,33 +1,57 @@
 import type { Metadata } from 'next';
-import { SITE_NAME, getSitePageUrl, getSiteUrl } from '@/lib/site';
+import { headers } from 'next/headers';
+import { SITE_NAME, getSeoUrls, getSiteUrlFromHeaders } from '@/lib/site';
+import type { Locale } from '@/i18n/config';
 
-const siteUrl = getSiteUrl();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const seoUrls = getSeoUrls(`/${locale}/pages/contact`, publicUrl);
+  const isEn = locale === 'en';
+  const title = isEn ? 'Contact Us - Feedback and Partnerships' : '联系我们 - 反馈与合作咨询';
+  const description = isEn
+    ? 'Contact Site Directory by email for page errors, listing corrections, feature suggestions, content feedback, or partnership questions.'
+    : '如需向网站收录导航反馈页面错误、申请收录修正、提交功能建议或合作咨询，请通过邮箱 1055567003@qq.com 联系我们。';
 
-export const metadata: Metadata = {
-  title: '联系我们 - 反馈与合作咨询',
-  description:
-    '如需向网站收录导航反馈页面错误、申请收录修正、提交功能建议或商务合作咨询，请通过邮箱 1055567003@qq.com 联系我们，通常 1-3 个工作日内回复。',
-  alternates: {
-    canonical: getSitePageUrl('/pages/contact'),
-  },
-  openGraph: {
-    title: '联系我们 - 网站收录导航',
-    description: '通过邮箱联系网站收录导航团队，反馈问题或咨询合作。',
-    url: getSitePageUrl('/pages/contact'),
-    type: 'website',
-  },
-};
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: seoUrls.canonical,
+      languages: seoUrls.languages,
+    },
+    openGraph: {
+      title,
+      description,
+      url: seoUrls.canonical,
+      type: 'website',
+    },
+  };
+}
 
-export default function ContactPage() {
+export default async function ContactPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const pageUrl = getSeoUrls(`/${locale}/pages/contact`, publicUrl).canonical;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
     name: `联系我们 - ${SITE_NAME}`,
-    url: getSitePageUrl('/pages/contact'),
+    url: pageUrl,
     mainEntity: {
       '@type': 'Organization',
       name: SITE_NAME,
-      url: siteUrl,
+      url: publicUrl,
       email: '1055567003@qq.com',
       contactPoint: {
         '@type': 'ContactPoint',

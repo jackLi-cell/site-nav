@@ -2,7 +2,7 @@ import { getDb } from '@/db';
 import { websites } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { getDbFromRequest } from '@/lib/api-helpers';
-import { getSiteUrl } from '@/lib/site';
+import { getLocalizedPath, getSitePageUrl, getSiteUrlFromRequest } from '@/lib/site';
 
 export async function GET(request: Request) {
   const db = getDbFromRequest(request);
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     return Response.json({ error: { code: 'SERVICE_UNAVAILABLE', message: '数据库未配置' } }, { status: 503 });
   }
 
-  const appUrl = getSiteUrl();
+  const appUrl = getSiteUrlFromRequest(request);
 
   const latestSites = await db
     .select({
@@ -28,10 +28,10 @@ export async function GET(request: Request) {
     .map(
       (site) => `    <item>
       <title><![CDATA[${site.name}]]></title>
-      <link>${appUrl}/sites/${site.slug}</link>
+      <link>${getSitePageUrl(getLocalizedPath('zh-CN', `/sites/${site.slug}`), appUrl)}</link>
       <description><![CDATA[${site.shortSummary || ''}]]></description>
       <pubDate>${new Date(site.createdAt).toUTCString()}</pubDate>
-      <guid>${appUrl}/sites/${site.slug}</guid>
+      <guid>${getSitePageUrl(getLocalizedPath('zh-CN', `/sites/${site.slug}`), appUrl)}</guid>
     </item>`
     )
     .join('\n');
@@ -40,11 +40,11 @@ export async function GET(request: Request) {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>网站收录导航 - 最新收录</title>
-    <link>${appUrl}</link>
+    <link>${getSitePageUrl('/zh-CN', appUrl)}</link>
     <description>精选网站收录与分类导航平台，发现优质网站资源。</description>
     <language>zh-CN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${appUrl}/feed.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${getSitePageUrl('/feed.xml', appUrl)}" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
 </rss>`;

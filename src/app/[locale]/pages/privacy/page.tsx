@@ -1,34 +1,58 @@
 import type { Metadata } from 'next';
-import { SITE_NAME, getSitePageUrl, getSiteUrl } from '@/lib/site';
+import { headers } from 'next/headers';
+import { SITE_NAME, getSeoUrls, getSiteUrlFromHeaders } from '@/lib/site';
+import type { Locale } from '@/i18n/config';
 
-const siteUrl = getSiteUrl();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const seoUrls = getSeoUrls(`/${locale}/pages/privacy`, publicUrl);
+  const isEn = locale === 'en';
+  const title = isEn ? 'Privacy Policy - Data Collection and Protection' : '隐私政策 - 个人信息收集与保护说明';
+  const description = isEn
+    ? 'Site Directory privacy policy: how account email, session cookies, submissions, click statistics, and server logs are collected, used, stored, and protected.'
+    : '网站收录导航隐私政策：说明本站如何收集、使用、存储和保护注册邮箱、会话 Cookie、投稿数据、点击去重信息和服务器日志。';
 
-export const metadata: Metadata = {
-  title: '隐私政策 - 个人信息收集与保护说明',
-  description:
-    '网站收录导航隐私政策：说明本站如何收集、使用、存储和保护用户个人信息，包括注册邮箱、会话 Cookie、投稿数据、点击去重信息和必要的服务器日志。',
-  alternates: {
-    canonical: getSitePageUrl('/pages/privacy'),
-  },
-  openGraph: {
-    title: '隐私政策 - 网站收录导航',
-    description: '了解网站收录导航如何收集、使用和保护你的个人信息。',
-    url: getSitePageUrl('/pages/privacy'),
-    type: 'website',
-  },
-};
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: seoUrls.canonical,
+      languages: seoUrls.languages,
+    },
+    openGraph: {
+      title,
+      description,
+      url: seoUrls.canonical,
+      type: 'website',
+    },
+  };
+}
 
-export default function PrivacyPage() {
+export default async function PrivacyPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const pageUrl = getSeoUrls(`/${locale}/pages/privacy`, publicUrl).canonical;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: '隐私政策 - 网站收录导航',
-    url: getSitePageUrl('/pages/privacy'),
+    url: pageUrl,
     description: '网站收录导航平台的隐私政策和个人信息保护说明。',
     isPartOf: {
       '@type': 'WebSite',
       name: SITE_NAME,
-      url: siteUrl,
+      url: publicUrl,
     },
   };
 

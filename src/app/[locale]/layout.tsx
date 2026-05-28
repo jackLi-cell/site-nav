@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import './globals.css';
 import { ClientBody } from '@/components/client-body';
-import { SITE_NAME, getSiteUrl } from '@/lib/site';
+import { getSeoUrls, getSiteUrlFromHeaders } from '@/lib/site';
 import { i18n, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-
-const siteUrl = getSiteUrl();
 
 export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ locale }));
@@ -18,6 +17,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const dict = await getDictionary(locale);
+  const headersList = await headers();
+  const siteUrl = getSiteUrlFromHeaders(headersList);
+  const pathname = headersList.get('x-pathname') || `/${locale}`;
+  const seoUrls = getSeoUrls(pathname, siteUrl);
 
   return {
     title: {
@@ -36,17 +39,16 @@ export async function generateMetadata({
       siteName: dict.site.name,
       title: `${dict.site.name} - ${dict.site.tagline}`,
       description: dict.site.ogDescription,
-      url: siteUrl,
+      url: seoUrls.canonical,
     },
     robots: {
       index: true,
       follow: true,
     },
     alternates: {
+      canonical: seoUrls.canonical,
       types: { 'application/rss+xml': '/feed.xml' },
-      languages: Object.fromEntries(
-        i18n.locales.map((l) => [l, `/${l}`])
-      ),
+      languages: seoUrls.languages,
     },
   };
 }

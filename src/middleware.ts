@@ -89,7 +89,14 @@ export function middleware(request: NextRequest) {
     }
 
     // Set locale cookie for future visits
-    const response = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-pathname', pathname);
+    requestHeaders.set('x-public-origin', getExternalOrigin(request));
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
     response.cookies.set(LOCALE_COOKIE, pathnameLocale, { path: '/', maxAge: 60 * 60 * 24 * 365 });
     return response;
   }

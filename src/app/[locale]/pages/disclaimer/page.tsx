@@ -1,34 +1,58 @@
 import type { Metadata } from 'next';
-import { SITE_NAME, getSitePageUrl, getSiteUrl } from '@/lib/site';
+import { headers } from 'next/headers';
+import { SITE_NAME, getSeoUrls, getSiteUrlFromHeaders } from '@/lib/site';
+import type { Locale } from '@/i18n/config';
 
-const siteUrl = getSiteUrl();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const seoUrls = getSeoUrls(`/${locale}/pages/disclaimer`, publicUrl);
+  const isEn = locale === 'en';
+  const title = isEn ? 'Disclaimer - Content Responsibility and Usage Notice' : '免责声明 - 内容责任边界与使用须知';
+  const description = isEn
+    ? 'Site Directory disclaimer: external link risks, information freshness, responsibility boundaries, and usage notes for the website navigation platform.'
+    : '网站收录导航免责声明：说明本站作为网站导航平台的内容责任边界、外部链接风险提示、信息时效性说明和用户使用须知。';
 
-export const metadata: Metadata = {
-  title: '免责声明 - 内容责任边界与使用须知',
-  description:
-    '网站收录导航免责声明：说明本站作为网站导航平台的内容责任边界、外部链接风险提示、信息时效性说明和用户使用须知。',
-  alternates: {
-    canonical: getSitePageUrl('/pages/disclaimer'),
-  },
-  openGraph: {
-    title: '免责声明 - 网站收录导航',
-    description: '了解网站收录导航平台的内容责任边界和使用须知。',
-    url: getSitePageUrl('/pages/disclaimer'),
-    type: 'website',
-  },
-};
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: seoUrls.canonical,
+      languages: seoUrls.languages,
+    },
+    openGraph: {
+      title,
+      description,
+      url: seoUrls.canonical,
+      type: 'website',
+    },
+  };
+}
 
-export default function DisclaimerPage() {
+export default async function DisclaimerPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const pageUrl = getSeoUrls(`/${locale}/pages/disclaimer`, publicUrl).canonical;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: `免责声明 - ${SITE_NAME}`,
-    url: getSitePageUrl('/pages/disclaimer'),
+    url: pageUrl,
     description: '网站收录导航平台的免责声明和使用须知。',
     isPartOf: {
       '@type': 'WebSite',
       name: SITE_NAME,
-      url: siteUrl,
+      url: publicUrl,
     },
   };
 

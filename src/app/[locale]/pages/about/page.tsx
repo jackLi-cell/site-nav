@@ -1,36 +1,59 @@
 import type { Metadata } from 'next';
-import { SITE_NAME, getSitePageUrl, getSiteUrl } from '@/lib/site';
+import { headers } from 'next/headers';
+import { SITE_NAME, getSeoUrls, getSiteUrlFromHeaders } from '@/lib/site';
+import type { Locale } from '@/i18n/config';
 
-const siteUrl = getSiteUrl();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const seoUrls = getSeoUrls(`/${locale}/pages/about`, publicUrl);
+  const isEn = locale === 'en';
+  const title = isEn ? 'About Us - Site Directory Platform' : '关于我们 - 网站收录导航平台介绍';
+  const description = isEn
+    ? 'Learn about Site Directory, a curated website navigation platform for discovering quality web resources by category, search, and reviewed user submissions.'
+    : '网站收录导航是一个面向中文用户的网站分类导航平台，支持分类浏览、关键词搜索和用户投稿审核，帮助用户发现优质网站资源。';
 
-export const metadata: Metadata = {
-  title: '关于我们 - 网站收录导航平台介绍',
-  description:
-    '网站收录导航是一个面向中文用户的网站分类导航平台，前台和后台运行在同一个 Next.js 应用中，数据存放在自建 MySQL 中，支持分类浏览、关键词搜索和用户投稿审核。',
-  alternates: {
-    canonical: getSitePageUrl('/pages/about'),
-  },
-  openGraph: {
-    title: '关于我们 - 网站收录导航平台介绍',
-    description:
-      '了解网站收录导航平台的定位、内容来源、审核机制和服务宗旨。',
-    url: getSitePageUrl('/pages/about'),
-    type: 'website',
-  },
-};
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: seoUrls.canonical,
+      languages: seoUrls.languages,
+    },
+    openGraph: {
+      title,
+      description,
+      url: seoUrls.canonical,
+      type: 'website',
+    },
+  };
+}
 
-export default function AboutPage() {
+export default async function AboutPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const headersList = await headers();
+  const publicUrl = getSiteUrlFromHeaders(headersList);
+  const pageUrl = getSeoUrls(`/${locale}/pages/about`, publicUrl).canonical;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: SITE_NAME,
-    url: siteUrl,
+    url: pageUrl,
     description:
       '面向中文用户的网站分类导航平台，收录全网优质网站资源，覆盖 30+ 大分类。',
     publisher: {
       '@type': 'Organization',
       name: SITE_NAME,
-      url: siteUrl,
+      url: publicUrl,
       contactPoint: {
         '@type': 'ContactPoint',
         email: '1055567003@qq.com',
