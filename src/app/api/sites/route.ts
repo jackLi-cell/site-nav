@@ -102,7 +102,7 @@ export async function GET(request: Request) {
           w.normalized_domain,
           w.icon_path AS iconPath,
           w.icon_path
-        FROM websites w
+        FROM websites w FORCE INDEX (idx_websites_sort)
         WHERE w.status = 'active'
           AND w.region = ?
           AND EXISTS (
@@ -111,7 +111,7 @@ export async function GET(request: Request) {
             WHERE wc.website_id = w.id
               AND wc.category_id = ?
           )
-        ORDER BY w.view_count DESC, w.name ASC
+        ORDER BY w.view_count DESC
         LIMIT ? OFFSET ?
       `, [region, categoryId, limit, offset]),
       db.all<{ count: number }>(`
@@ -159,10 +159,10 @@ export async function GET(request: Request) {
         w.normalized_domain,
         w.icon_path AS iconPath,
         w.icon_path
-      FROM websites w
+      FROM websites w FORCE INDEX (idx_websites_sort)
       WHERE w.status = 'active'
         AND w.region = ?
-      ORDER BY w.view_count DESC, w.name ASC
+      ORDER BY w.view_count DESC
       LIMIT ? OFFSET ?
     `, [region, limit, offset]),
     db.all<{ count: number }>(

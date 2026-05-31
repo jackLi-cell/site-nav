@@ -100,9 +100,10 @@ export async function GET(
     return Response.json({ error: { code: 'NOT_FOUND', message: '分类不存在' } }, { status: 404 });
   }
 
+  const websiteIndex = tab === 'latest' ? 'idx_websites_created' : 'idx_websites_sort';
   const orderSql = tab === 'latest'
     ? 'w.created_at DESC'
-    : 'w.view_count DESC, w.name ASC';
+    : 'w.view_count DESC';
   const selectSql = `
     SELECT
       w.id,
@@ -120,7 +121,7 @@ export async function GET(
       w.normalized_domain,
       w.icon_path AS iconPath,
       w.icon_path
-    FROM websites w
+    FROM websites w FORCE INDEX (${websiteIndex})
     WHERE w.status = 'active'
       AND EXISTS (
         SELECT 1

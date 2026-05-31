@@ -71,7 +71,7 @@ export async function GET(request: Request) {
         w.icon_path AS iconPath,
         w.icon_path,
         w.region
-      FROM websites w
+      FROM websites w FORCE INDEX (idx_websites_sort)
       WHERE w.status = 'active'
         AND w.region = ?
         AND (
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
           OR w.short_summary LIKE ?
           OR w.normalized_domain LIKE ?
         )
-      ORDER BY w.view_count DESC, w.name ASC
+      ORDER BY w.view_count DESC
       LIMIT ?
     `, [region, searchPattern, searchPattern, searchPattern, keywordLimit]);
   const keywordPromise = q.length >= 3
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
         )
         AND w.status = 'active'
         AND w.region = ?
-      ORDER BY w.view_count DESC, w.name ASC
+      ORDER BY w.view_count DESC
       LIMIT ?
     `, [`${q}%`, `${normalizedQ}%`, region, keywordLimit])
     : Promise.resolve({ results: [] as SearchSiteRow[] });
