@@ -190,7 +190,8 @@ export async function GET(
   let countResult: { results: { count: number }[] };
 
   if (useRankIndexFirst) {
-    [results, countResult] = await Promise.all([fetchResults(true, 'rank'), fetchCount(true)]);
+    results = await fetchResults(true, 'rank');
+    countResult = { results: [{ count: categorySize }] };
   } else {
     countResult = await fetchCount(true);
     results = Number(countResult.results[0]?.count || 0) > 0
