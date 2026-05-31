@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import Script from 'next/script';
 import './globals.css';
 import { ClientBody } from '@/components/client-body';
 import { getSeoUrls, getSiteUrlFromHeaders } from '@/lib/site';
@@ -66,6 +67,17 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body className="bg-gray-50 text-gray-900 text-sm leading-relaxed">
         <ClientBody locale={locale}>{children}</ClientBody>
+        <Script id="baidu-analytics" strategy="afterInteractive">
+          {`
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?90a280808a7930d9d938b0052d17c02e";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+`}
+        </Script>
       </body>
     </html>
   );

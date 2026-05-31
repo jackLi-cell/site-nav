@@ -15,8 +15,8 @@ export async function generateMetadata({
   const isEn = locale === 'en';
   const title = isEn ? 'Privacy Policy - Data Collection and Protection' : '隐私政策 - 个人信息收集与保护说明';
   const description = isEn
-    ? 'Site Directory privacy policy: how account email, session cookies, submissions, click statistics, and server logs are collected, used, stored, and protected.'
-    : '网站收录导航隐私政策：说明本站如何收集、使用、存储和保护注册邮箱、会话 Cookie、投稿数据、点击去重信息和服务器日志。';
+    ? 'Site Directory privacy policy: how account email, session cookies, submissions, click statistics, Baidu Analytics, and server logs are collected, used, stored, and protected.'
+    : '网站收录导航隐私政策：说明本站如何收集、使用、存储和保护注册邮箱、会话 Cookie、投稿数据、点击去重信息、百度统计数据和服务器日志。';
 
   return {
     title,
@@ -140,11 +140,16 @@ export default async function PrivacyPage({
                   <td className="px-4 py-2">用于降低登录劫持和会话伪造风险</td>
                   <td className="px-4 py-2">安全必要</td>
                 </tr>
+                <tr>
+                  <td className="px-4 py-2">访问统计 Cookie 或类似技术</td>
+                  <td className="px-4 py-2">由百度统计用于匿名访问量、来源、设备和浏览器统计</td>
+                  <td className="px-4 py-2">用于站点改进，可通过浏览器隐私设置限制</td>
+                </tr>
               </tbody>
             </table>
           </div>
           <p className="text-gray-700 leading-relaxed mt-3">
-            本站不使用广告追踪 Cookie 或第三方营销 Cookie。你可以在浏览器设置中管理或禁用 Cookie，但禁用会话 Cookie 将导致无法使用登录和投稿功能。
+            本站不使用广告追踪 Cookie 或第三方营销 Cookie。百度统计可能使用 Cookie 或类似技术生成匿名访问统计。你可以在浏览器设置中管理或限制 Cookie，但禁用会话 Cookie 将导致无法使用登录和投稿功能。
           </p>
         </section>
 
@@ -176,11 +181,12 @@ export default async function PrivacyPage({
           <h2 className="text-lg font-semibold text-gray-800 mb-3">六、第三方服务</h2>
           <p className="text-gray-700 leading-relaxed mb-3">本站可能使用以下第三方服务：</p>
           <ul className="list-disc pl-5 text-gray-700 space-y-2">
+            <li><strong>百度统计</strong>：用于统计匿名页面访问量、访问来源、设备类型和浏览器等汇总数据，帮助我们发现错误、评估页面质量并改进站点体验</li>
             <li><strong>人机验证服务</strong>：如果站点启用人机验证，token 会发送给验证服务商进行校验</li>
             <li><strong>邮件服务</strong>：如果站点后续启用邮件通知，相关邮箱地址会发送给邮件服务商处理</li>
           </ul>
           <p className="text-gray-700 leading-relaxed mt-3">
-            本站不使用 Google Analytics、百度统计或其他第三方追踪分析工具。
+            本站当前未接入 Google Analytics 或第三方广告追踪脚本。百度统计仅用于汇总访问分析，不用于站内账号密码、投稿正文或后台数据处理。
           </p>
         </section>
 
