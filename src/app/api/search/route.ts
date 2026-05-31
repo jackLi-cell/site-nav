@@ -106,7 +106,8 @@ export async function GET(request: Request) {
       LIMIT ?
     `, [`${q}%`, `${normalizedQ}%`, region, keywordLimit])
     : Promise.resolve({ results: [] as SearchSiteRow[] });
-  const categoryPromise = db.all<SearchSiteRow>(`
+  const categoryPromise = q.length >= 3
+    ? db.all<SearchSiteRow>(`
       SELECT
         w.id,
         w.name,
@@ -129,7 +130,8 @@ export async function GET(request: Request) {
         AND w.region = ?
       ORDER BY w.view_count DESC
       LIMIT ?
-    `, [`${q}%`, region, keywordLimit]);
+    `, [`${q}%`, region, keywordLimit])
+    : Promise.resolve({ results: [] as SearchSiteRow[] });
   const [directRows, keywordRows, categoryRows] = await Promise.all([directPromise, keywordPromise, categoryPromise]);
 
   const seen = new Set<string>();
