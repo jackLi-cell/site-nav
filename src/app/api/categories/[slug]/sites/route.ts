@@ -24,6 +24,8 @@ type SiteListRow = {
   icon_path: string | null;
 };
 
+const BROAD_CATEGORY_THRESHOLD = 10000;
+
 function getSitesData() {
   if (!_sitesCache) _sitesCache = JSON.parse(readFileSync(join(process.cwd(), 'src/data-sites.json'), 'utf-8'));
   return _sitesCache!;
@@ -104,7 +106,7 @@ export async function GET(
   const orderSql = tab === 'latest'
     ? 'w.created_at DESC'
     : 'w.view_count DESC';
-  const selectSql = `
+  const rankIndexedSelectSql = `
     SELECT
       w.id,
       w.name,
@@ -133,6 +135,31 @@ export async function GET(
     ORDER BY ${orderSql}
     LIMIT ? OFFSET ?
   `;
+  const relationSelectSql = `
+    SELECT
+      w.id,
+      w.name,
+      w.slug,
+      w.url,
+      w.short_summary AS shortSummary,
+      w.short_summary,
+      w.view_count AS viewCount,
+      w.view_count,
+      w.created_at AS createdAt,
+      w.created_at,
+      w.region,
+      w.normalized_domain AS normalizedDomain,
+      w.normalized_domain,
+      w.icon_path AS iconPath,
+      w.icon_path
+    FROM website_categories wc FORCE INDEX (idx_wc_category)
+    INNER JOIN websites w ON w.id = wc.website_id
+    WHERE wc.category_id = ?
+      AND w.status = 'active'
+      __REGION_FILTER__
+    ORDER BY ${orderSql}
+    LIMIT ? OFFSET ?
+  `;
   const countSql = `
     SELECT COUNT(*) AS count
     FROM website_categories wc
@@ -141,8 +168,9 @@ export async function GET(
       AND w.status = 'active'
       __REGION_FILTER__
   `;
-  const fetchResults = (filterRegion: boolean) => {
-    const sql = selectSql.replace('__REGION_FILTER__', filterRegion && shouldFilterRegion ? 'AND w.region = ?' : '');
+  const fetchResults = (filterRegion: boolean, mode: 'rank' | 'relation') => {
+    const template = mode === 'rank' ? rankIndexedSelectSql : relationSelectSql;
+    const sql = template.replace('__REGION_FILTER__', filterRegion && shouldFilterRegion ? 'AND w.region = ?' : '');
     const params = filterRegion && shouldFilterRegion
       ? [category[0].id, requestedRegion, limit, offset]
       : [category[0].id, limit, offset];
@@ -156,7 +184,20 @@ export async function GET(
     return db.all<{ count: number }>(sql, params);
   };
 
-  let [results, countResult] = await Promise.all([fetchResults(true), fetchCount(true)]);
+  const categorySize = Number(category[0].websiteCount || category[0].website_count || 0);
+  const useRankIndexFirst = categorySize >= BROAD_CATEGORY_THRESHOLD && tab !== 'latest';
+  let results: { results: SiteListRow[] };
+  let countResult: { results: { count: number }[] };
+
+  if (useRankIndexFirst) {
+    [results, countResult] = await Promise.all([fetchResults(true, 'rank'), fetchCount(true)]);
+  } else {
+    countResult = await fetchCount(true);
+    results = Number(countResult.results[0]?.count || 0) > 0
+      ? await fetchResults(true, 'relation')
+      : { results: [] };
+  }
+
   let total = Number(countResult.results[0]?.count || 0);
   let regionFallback = null;
 
@@ -164,7 +205,7 @@ export async function GET(
     const fallbackCount = await fetchCount(false);
     const fallbackTotal = Number(fallbackCount.results[0]?.count || 0);
     if (fallbackTotal > 0) {
-      results = await fetchResults(false);
+      results = await fetchResults(false, 'relation');
       countResult = fallbackCount;
       total = fallbackTotal;
       regionFallback = { requestedRegion, effectiveRegion: 'all' };

@@ -53,7 +53,6 @@ export async function GET(request: Request) {
     return Response.json({ data, pagination: { page, limit, total: filtered.length, totalPages: Math.ceil(filtered.length / limit) } });
   }
 
-  const searchPattern = `%${q}%`;
   const keywordLimit = Math.min(250, limit * 8 + offset);
   const normalizedQ = q.toLowerCase();
   const directPromise = db.all<SearchSiteRow>(`
@@ -75,13 +74,12 @@ export async function GET(request: Request) {
       WHERE w.status = 'active'
         AND w.region = ?
         AND (
-          w.name LIKE ?
-          OR w.short_summary LIKE ?
-          OR w.normalized_domain LIKE ?
+          w.normalized_domain LIKE ?
+          OR w.name LIKE ?
         )
       ORDER BY w.view_count DESC
       LIMIT ?
-    `, [region, searchPattern, searchPattern, searchPattern, keywordLimit]);
+    `, [region, `${normalizedQ}%`, `${q}%`, keywordLimit]);
   const keywordPromise = q.length >= 3
     ? db.all<SearchSiteRow>(`
       SELECT
