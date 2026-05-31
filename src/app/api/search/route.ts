@@ -70,16 +70,13 @@ export async function GET(request: Request) {
         w.icon_path AS iconPath,
         w.icon_path,
         w.region
-      FROM websites w FORCE INDEX (idx_websites_sort)
+      FROM websites w FORCE INDEX (idx_websites_domain)
       WHERE w.status = 'active'
         AND w.region = ?
-        AND (
-          w.normalized_domain LIKE ?
-          OR w.name LIKE ?
-        )
+        AND w.normalized_domain LIKE ?
       ORDER BY w.view_count DESC
       LIMIT ?
-    `, [region, `${normalizedQ}%`, `${q}%`, keywordLimit]);
+    `, [region, `${normalizedQ}%`, keywordLimit]);
   const keywordPromise = q.length >= 3
     ? db.all<SearchSiteRow>(`
       SELECT
@@ -109,10 +106,34 @@ export async function GET(request: Request) {
       LIMIT ?
     `, [`${q}%`, `${normalizedQ}%`, region, keywordLimit])
     : Promise.resolve({ results: [] as SearchSiteRow[] });
-  const [directRows, keywordRows] = await Promise.all([directPromise, keywordPromise]);
+  const categoryPromise = db.all<SearchSiteRow>(`
+      SELECT
+        w.id,
+        w.name,
+        w.slug,
+        w.url,
+        w.short_summary AS shortSummary,
+        w.short_summary,
+        w.view_count AS viewCount,
+        w.view_count,
+        w.normalized_domain AS normalizedDomain,
+        w.normalized_domain,
+        w.icon_path AS iconPath,
+        w.icon_path,
+        w.region
+      FROM categories c
+      INNER JOIN website_categories wc FORCE INDEX (idx_wc_category) ON wc.category_id = c.id
+      INNER JOIN websites w ON w.id = wc.website_id
+      WHERE c.name LIKE ?
+        AND w.status = 'active'
+        AND w.region = ?
+      ORDER BY w.view_count DESC
+      LIMIT ?
+    `, [`${q}%`, region, keywordLimit]);
+  const [directRows, keywordRows, categoryRows] = await Promise.all([directPromise, keywordPromise, categoryPromise]);
 
   const seen = new Set<string>();
-  const merged = [...directRows.results, ...keywordRows.results]
+  const merged = [...directRows.results, ...keywordRows.results, ...categoryRows.results]
     .filter((row) => {
       if (seen.has(row.id)) return false;
       seen.add(row.id);

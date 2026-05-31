@@ -24,7 +24,7 @@ type SiteListRow = {
   icon_path: string | null;
 };
 
-const BROAD_CATEGORY_THRESHOLD = 10000;
+const BROAD_CATEGORY_THRESHOLD = 1000;
 
 function getSitesData() {
   if (!_sitesCache) _sitesCache = JSON.parse(readFileSync(join(process.cwd(), 'src/data-sites.json'), 'utf-8'));
