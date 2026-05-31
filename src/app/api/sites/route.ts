@@ -1,10 +1,32 @@
-import { websites, websiteCategories, categories } from '@/db/schema';
-import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import { getDbFromRequest } from '@/lib/api-helpers';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
 let _sitesCache: any[] | null = null;
+type SiteListRow = {
+  id: string;
+  name: string;
+  slug: string;
+  url: string;
+  shortSummary: string | null;
+  short_summary: string | null;
+  viewCount: number;
+  view_count: number;
+  createdAt: string;
+  created_at: string;
+  region: string;
+  company: string | null;
+  language: string | null;
+  isFree: string | null;
+  is_free: string | null;
+  starRating: number;
+  star_rating: number;
+  normalizedDomain: string;
+  normalized_domain: string;
+  iconPath: string | null;
+  icon_path: string | null;
+};
+
 function getSitesData() {
   if (!_sitesCache) {
     const raw = readFileSync(join(process.cwd(), 'src/data-sites.json'), 'utf-8');
@@ -46,74 +68,116 @@ export async function GET(request: Request) {
     return Response.json({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   }
 
-  const baseSelect = {
-    id: websites.id,
-    name: websites.name,
-    slug: websites.slug,
-    url: websites.url,
-    shortSummary: websites.shortSummary,
-    short_summary: websites.shortSummary,
-    viewCount: websites.viewCount,
-    view_count: websites.viewCount,
-    createdAt: websites.createdAt,
-    created_at: websites.createdAt,
-    region: websites.region,
-    company: websites.company,
-    language: websites.language,
-    isFree: websites.isFree,
-    is_free: websites.isFree,
-    starRating: websites.starRating,
-    star_rating: websites.starRating,
-    normalizedDomain: websites.normalizedDomain,
-    normalized_domain: websites.normalizedDomain,
-    iconPath: websites.iconPath,
-    icon_path: websites.iconPath,
-  } as const;
-
-  const conditions = [eq(websites.status, 'active'), eq(websites.region, region)];
   if (category) {
-    const categoryRow = await db.select({ id: categories.id }).from(categories).where(eq(categories.slug, category)).limit(1);
+    const { results: categoryRow } = await db.all<{ id: string }>(
+      'SELECT id FROM categories WHERE slug = ? LIMIT 1',
+      [category]
+    );
     if (!categoryRow.length) {
       return Response.json({ data: [], pagination: { page, limit, total: 0, totalPages: 0 } });
     }
-    conditions.push(eq(websiteCategories.categoryId, categoryRow[0].id));
+    const categoryId = categoryRow[0].id;
 
-    const results = await db
-      .select(baseSelect)
-      .from(websites)
-      .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))
-      .where(and(...conditions))
-      .orderBy(desc(websites.viewCount), asc(websites.name))
-      .limit(limit)
-      .offset(offset);
-
-    const countResult = await db
-      .select({ count: sql<number>`count(distinct ${websites.id})` })
-      .from(websites)
-      .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))
-      .where(and(...conditions));
+    const [sitesResult, countResult] = await Promise.all([
+      db.all<SiteListRow>(`
+        SELECT
+          w.id,
+          w.name,
+          w.slug,
+          w.url,
+          w.short_summary AS shortSummary,
+          w.short_summary,
+          w.view_count AS viewCount,
+          w.view_count,
+          w.created_at AS createdAt,
+          w.created_at,
+          w.region,
+          w.company,
+          w.language,
+          w.is_free AS isFree,
+          w.is_free,
+          w.star_rating AS starRating,
+          w.star_rating,
+          w.normalized_domain AS normalizedDomain,
+          w.normalized_domain,
+          w.icon_path AS iconPath,
+          w.icon_path
+        FROM websites w
+        WHERE w.status = 'active'
+          AND w.region = ?
+          AND EXISTS (
+            SELECT 1
+            FROM website_categories wc
+            WHERE wc.website_id = w.id
+              AND wc.category_id = ?
+          )
+        ORDER BY w.view_count DESC, w.name ASC
+        LIMIT ? OFFSET ?
+      `, [region, categoryId, limit, offset]),
+      db.all<{ count: number }>(`
+        SELECT COUNT(*) AS count
+        FROM website_categories wc
+        INNER JOIN websites w ON w.id = wc.website_id
+        WHERE wc.category_id = ?
+          AND w.status = 'active'
+          AND w.region = ?
+      `, [categoryId, region]),
+    ]);
 
     return Response.json({
-      data: results,
-      pagination: { page, limit, total: countResult[0]?.count || 0, totalPages: Math.ceil((countResult[0]?.count || 0) / limit) },
+      data: sitesResult.results,
+      pagination: {
+        page,
+        limit,
+        total: Number(countResult.results[0]?.count || 0),
+        totalPages: Math.ceil(Number(countResult.results[0]?.count || 0) / limit),
+      },
     });
   }
 
-  const results = await db
-    .select(baseSelect)
-    .from(websites)
-    .where(and(...conditions))
-    .orderBy(desc(websites.viewCount), asc(websites.name))
-    .limit(limit)
-    .offset(offset);
-
-  const countResult = await db
-    .select({ count: sql<number>`count(distinct ${websites.id})` })
-    .from(websites)
-    .where(and(...conditions));
+  const [sitesResult, countResult] = await Promise.all([
+    db.all<SiteListRow>(`
+      SELECT
+        w.id,
+        w.name,
+        w.slug,
+        w.url,
+        w.short_summary AS shortSummary,
+        w.short_summary,
+        w.view_count AS viewCount,
+        w.view_count,
+        w.created_at AS createdAt,
+        w.created_at,
+        w.region,
+        w.company,
+        w.language,
+        w.is_free AS isFree,
+        w.is_free,
+        w.star_rating AS starRating,
+        w.star_rating,
+        w.normalized_domain AS normalizedDomain,
+        w.normalized_domain,
+        w.icon_path AS iconPath,
+        w.icon_path
+      FROM websites w
+      WHERE w.status = 'active'
+        AND w.region = ?
+      ORDER BY w.view_count DESC, w.name ASC
+      LIMIT ? OFFSET ?
+    `, [region, limit, offset]),
+    db.all<{ count: number }>(
+      "SELECT COUNT(*) AS count FROM websites WHERE status = 'active' AND region = ?",
+      [region]
+    ),
+  ]);
 
   return Response.json({
-    data: results,
-    pagination: { page, limit, total: countResult[0]?.count || 0, totalPages: Math.ceil((countResult[0]?.count || 0) / limit) },
+    data: sitesResult.results,
+    pagination: {
+      page,
+      limit,
+      total: Number(countResult.results[0]?.count || 0),
+      totalPages: Math.ceil(Number(countResult.results[0]?.count || 0) / limit),
+    },
   });
 }

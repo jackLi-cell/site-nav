@@ -1,10 +1,24 @@
-import { websites, websiteKeywords, keywords } from '@/db/schema';
-import { eq, and, like, or, desc, asc, sql } from 'drizzle-orm';
 import { getDbFromRequest } from '@/lib/api-helpers';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
 let _sitesCache: any[] | null = null;
+type SearchSiteRow = {
+  id: string;
+  name: string;
+  slug: string;
+  url: string;
+  shortSummary: string | null;
+  short_summary: string | null;
+  viewCount: number;
+  view_count: number;
+  normalizedDomain: string;
+  normalized_domain: string;
+  iconPath: string | null;
+  icon_path: string | null;
+  region: string;
+};
+
 function getSitesData() {
   if (!_sitesCache) _sitesCache = JSON.parse(readFileSync(join(process.cwd(), 'src/data-sites.json'), 'utf-8'));
   return _sitesCache!;
@@ -40,70 +54,81 @@ export async function GET(request: Request) {
   }
 
   const searchPattern = `%${q}%`;
-  const results = await db
-    .select({
-      id: websites.id,
-      name: websites.name,
-      slug: websites.slug,
-      url: websites.url,
-      shortSummary: websites.shortSummary,
-      short_summary: websites.shortSummary,
-      viewCount: websites.viewCount,
-      view_count: websites.viewCount,
-      normalizedDomain: websites.normalizedDomain,
-      normalized_domain: websites.normalizedDomain,
-      iconPath: websites.iconPath,
-      icon_path: websites.iconPath,
-      region: websites.region,
-    })
-    .from(websites)
-    .leftJoin(websiteKeywords, eq(websites.id, websiteKeywords.websiteId))
-    .leftJoin(keywords, eq(websiteKeywords.keywordId, keywords.id))
-    .where(
-      and(
-        eq(websites.status, 'active'),
-        eq(websites.region, region),
-        or(
-          like(websites.name, searchPattern),
-          like(websites.shortSummary, searchPattern),
-          like(keywords.name, searchPattern)
+  const keywordLimit = Math.min(250, limit * 8 + offset);
+  const normalizedQ = q.toLowerCase();
+  const directPromise = db.all<SearchSiteRow>(`
+      SELECT
+        w.id,
+        w.name,
+        w.slug,
+        w.url,
+        w.short_summary AS shortSummary,
+        w.short_summary,
+        w.view_count AS viewCount,
+        w.view_count,
+        w.normalized_domain AS normalizedDomain,
+        w.normalized_domain,
+        w.icon_path AS iconPath,
+        w.icon_path,
+        w.region
+      FROM websites w
+      WHERE w.status = 'active'
+        AND w.region = ?
+        AND (
+          w.name LIKE ?
+          OR w.short_summary LIKE ?
+          OR w.normalized_domain LIKE ?
         )
-      )
-    )
-    .groupBy(
-      websites.id,
-      websites.name,
-      websites.slug,
-      websites.url,
-      websites.shortSummary,
-      websites.viewCount,
-      websites.normalizedDomain,
-      websites.iconPath,
-      websites.region
-    )
-    .orderBy(desc(websites.viewCount), asc(websites.name))
-    .limit(limit)
-    .offset(offset);
+      ORDER BY w.view_count DESC, w.name ASC
+      LIMIT ?
+    `, [region, searchPattern, searchPattern, searchPattern, keywordLimit]);
+  const keywordPromise = q.length >= 3
+    ? db.all<SearchSiteRow>(`
+      SELECT
+        w.id,
+        w.name,
+        w.slug,
+        w.url,
+        w.short_summary AS shortSummary,
+        w.short_summary,
+        w.view_count AS viewCount,
+        w.view_count,
+        w.normalized_domain AS normalizedDomain,
+        w.normalized_domain,
+        w.icon_path AS iconPath,
+        w.icon_path,
+        w.region
+      FROM keywords k
+      INNER JOIN website_keywords wk ON wk.keyword_id = k.id
+      INNER JOIN websites w ON w.id = wk.website_id
+      WHERE (
+          k.name LIKE ?
+          OR k.normalized LIKE ?
+        )
+        AND w.status = 'active'
+        AND w.region = ?
+      ORDER BY w.view_count DESC, w.name ASC
+      LIMIT ?
+    `, [`${q}%`, `${normalizedQ}%`, region, keywordLimit])
+    : Promise.resolve({ results: [] as SearchSiteRow[] });
+  const [directRows, keywordRows] = await Promise.all([directPromise, keywordPromise]);
 
-  const countResult = await db
-    .select({ count: sql<number>`count(distinct ${websites.id})` })
-    .from(websites)
-    .leftJoin(websiteKeywords, eq(websites.id, websiteKeywords.websiteId))
-    .leftJoin(keywords, eq(websiteKeywords.keywordId, keywords.id))
-    .where(
-      and(
-        eq(websites.status, 'active'),
-        eq(websites.region, region),
-        or(
-          like(websites.name, searchPattern),
-          like(websites.shortSummary, searchPattern),
-          like(keywords.name, searchPattern)
-        )
-      )
-    );
+  const seen = new Set<string>();
+  const merged = [...directRows.results, ...keywordRows.results]
+    .filter((row) => {
+      if (seen.has(row.id)) return false;
+      seen.add(row.id);
+      return true;
+    })
+    .sort((a, b) => {
+      const byViews = Number(b.view_count || 0) - Number(a.view_count || 0);
+      return byViews || a.name.localeCompare(b.name);
+    });
+  const paged = merged.slice(offset, offset + limit);
+  const total = merged.length;
 
   return Response.json({
-    data: results,
-    pagination: { page, limit, total: countResult[0]?.count || 0, totalPages: Math.ceil((countResult[0]?.count || 0) / limit) },
+    data: paged,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   });
 }

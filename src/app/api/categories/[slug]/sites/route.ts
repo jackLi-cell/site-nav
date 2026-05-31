@@ -1,11 +1,29 @@
-import { websites, websiteCategories, categories } from '@/db/schema';
-import { eq, and, desc, asc, sql } from 'drizzle-orm';
+import { categories } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { getDbFromRequest } from '@/lib/api-helpers';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
 let _sitesCache: any[] | null = null;
 let _catsCache: any[] | null = null;
+type SiteListRow = {
+  id: string;
+  name: string;
+  slug: string;
+  url: string;
+  shortSummary: string | null;
+  short_summary: string | null;
+  viewCount: number;
+  view_count: number;
+  createdAt: string;
+  created_at: string;
+  region: string;
+  normalizedDomain: string;
+  normalized_domain: string;
+  iconPath: string | null;
+  icon_path: string | null;
+};
+
 function getSitesData() {
   if (!_sitesCache) _sitesCache = JSON.parse(readFileSync(join(process.cwd(), 'src/data-sites.json'), 'utf-8'));
   return _sitesCache!;
@@ -82,52 +100,68 @@ export async function GET(
     return Response.json({ error: { code: 'NOT_FOUND', message: '分类不存在' } }, { status: 404 });
   }
 
-  const orderBy = tab === 'latest' ? [desc(websites.createdAt)] : [desc(websites.viewCount), asc(websites.name)];
-  const makeWhere = (filterRegion: boolean) => {
-    const conditions = [eq(websites.status, 'active'), eq(websiteCategories.categoryId, category[0].id)];
-    if (filterRegion && shouldFilterRegion) {
-      conditions.push(eq(websites.region, requestedRegion));
-    }
-    return and(...conditions);
+  const orderSql = tab === 'latest'
+    ? 'w.created_at DESC'
+    : 'w.view_count DESC, w.name ASC';
+  const selectSql = `
+    SELECT
+      w.id,
+      w.name,
+      w.slug,
+      w.url,
+      w.short_summary AS shortSummary,
+      w.short_summary,
+      w.view_count AS viewCount,
+      w.view_count,
+      w.created_at AS createdAt,
+      w.created_at,
+      w.region,
+      w.normalized_domain AS normalizedDomain,
+      w.normalized_domain,
+      w.icon_path AS iconPath,
+      w.icon_path
+    FROM websites w
+    WHERE w.status = 'active'
+      AND EXISTS (
+        SELECT 1
+        FROM website_categories wc
+        WHERE wc.website_id = w.id
+          AND wc.category_id = ?
+      )
+      __REGION_FILTER__
+    ORDER BY ${orderSql}
+    LIMIT ? OFFSET ?
+  `;
+  const countSql = `
+    SELECT COUNT(*) AS count
+    FROM website_categories wc
+    INNER JOIN websites w ON w.id = wc.website_id
+    WHERE wc.category_id = ?
+      AND w.status = 'active'
+      __REGION_FILTER__
+  `;
+  const fetchResults = (filterRegion: boolean) => {
+    const sql = selectSql.replace('__REGION_FILTER__', filterRegion && shouldFilterRegion ? 'AND w.region = ?' : '');
+    const params = filterRegion && shouldFilterRegion
+      ? [category[0].id, requestedRegion, limit, offset]
+      : [category[0].id, limit, offset];
+    return db.all<SiteListRow>(sql, params);
   };
-  const fetchResults = (filterRegion: boolean) => db
-    .select({
-      id: websites.id,
-      name: websites.name,
-      slug: websites.slug,
-      url: websites.url,
-      shortSummary: websites.shortSummary,
-      short_summary: websites.shortSummary,
-      viewCount: websites.viewCount,
-      view_count: websites.viewCount,
-      createdAt: websites.createdAt,
-      created_at: websites.createdAt,
-      region: websites.region,
-      normalizedDomain: websites.normalizedDomain,
-      normalized_domain: websites.normalizedDomain,
-      iconPath: websites.iconPath,
-      icon_path: websites.iconPath,
-    })
-    .from(websites)
-    .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))
-    .where(makeWhere(filterRegion))
-    .orderBy(...orderBy)
-    .limit(limit)
-    .offset(offset);
-  const fetchCount = (filterRegion: boolean) => db
-    .select({ count: sql<number>`count(distinct ${websites.id})` })
-    .from(websites)
-    .innerJoin(websiteCategories, eq(websites.id, websiteCategories.websiteId))
-    .where(makeWhere(filterRegion));
+  const fetchCount = (filterRegion: boolean) => {
+    const sql = countSql.replace('__REGION_FILTER__', filterRegion && shouldFilterRegion ? 'AND w.region = ?' : '');
+    const params = filterRegion && shouldFilterRegion
+      ? [category[0].id, requestedRegion]
+      : [category[0].id];
+    return db.all<{ count: number }>(sql, params);
+  };
 
-  let results = await fetchResults(true);
-  let countResult = await fetchCount(true);
-  let total = Number(countResult[0]?.count || 0);
+  let [results, countResult] = await Promise.all([fetchResults(true), fetchCount(true)]);
+  let total = Number(countResult.results[0]?.count || 0);
   let regionFallback = null;
 
   if (shouldFilterRegion && total === 0) {
     const fallbackCount = await fetchCount(false);
-    const fallbackTotal = Number(fallbackCount[0]?.count || 0);
+    const fallbackTotal = Number(fallbackCount.results[0]?.count || 0);
     if (fallbackTotal > 0) {
       results = await fetchResults(false);
       countResult = fallbackCount;
@@ -138,7 +172,7 @@ export async function GET(
 
   return Response.json({
     category: category[0],
-    data: results,
+    data: results.results,
     regionFallback,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   });

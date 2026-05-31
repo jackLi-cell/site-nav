@@ -17,6 +17,7 @@
     "db:init:import": "node scripts/init-db.js --import",
     "db:seed": "node scripts/apply-seed-sql.js",
     "data:import": "node scripts/apply-seed-sql.js",
+    "db:optimize-indexes": "node scripts/optimize-query-indexes.js",
     "icons:fetch": "node scripts/fetch-site-icons.js",
     "icons:export": "node scripts/export-icon-updates.js"
   },
